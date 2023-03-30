@@ -1,5 +1,6 @@
     sta   net  dist  azi  phase   time       res    wt    sta  
     APLA  EC   0.42 300  P      17:13:06.34  0.33 M  1.00  u APLA 
+    APLA  EC   0.42 300  S      17:13:16.45  0.33 M  1.00  u APLA
     ACH1  EC   0.46 165  P      17:13:05.05 -1.27 M  1.00  . ACH1 
     ACH1  EC   0.46 165  S      17:13:15.43 -0.84 M  1.00  . ACH1 
     ACH2  EC   0.47 152  P      17:13:04.88 -1.58 M  1.00  . ACH2 
@@ -7,18 +8,26 @@
     GYKA  EC   0.61  15  P      17:13:06.22 -1.46 M  1.00  d GYKA 
     GYKA  EC   0.61  15  S      17:13:16.99 -1.69 M  1.00  . GYKA 
     GYE1  EC   0.61  11  P      17:13:05.36 -2.32 M  1.00  d GYE1 
+    GYE1  EC   0.61  11  S      17:13:15.19 -2.32 M  1.00  d GYE1
     GYC2  EC   0.63  10  P      17:13:06.60 -1.32 M  1.00  d GYC2 
     GYC2  EC   0.63  10  S      17:13:17.35 -1.77 M  1.00  . GYC2 
     PCRA  EC   0.64 125  P      17:13:07.53 -0.46 M  1.00  d PCRA 
     PCRA  EC   0.64 125  S      17:13:17.75 -1.49 M  1.00  . PCRA 
     AC07  EC   0.70   4  P      17:13:07.18 -1.31 M  1.00  d AC07 
     AC07  EC   0.70   4  S      17:13:18.45 -1.68 M  1.00  . AC07 
+    ACUE  EC   0.70   4  P      17:13:11.50 -1.31 M  1.00  d AC07 
+    ACUE  EC   0.70   4  S      17:13:26.14 -1.68 M  1.00  . AC07 
     ARNL  EC   0.70 183  P      17:13:08.81  0.26 M  1.00  d ARNL 
     ARNL  EC   0.70 183  S      17:13:20.13 -0.10 M  1.00  . ARNL 
     GYE3  EC   0.70  11  P      17:13:05.83 -2.73 M  1.00  d GYE3 
+    GYE3  EC   0.70  11  S      17:13:16.05 -2.73 M  1.00  d GYE3
     GYPL  EC   0.73   5  P      17:13:07.20 -1.62 M  1.00  d GYPL 
+    GYPL  EC   0.73   5  S      17:13:18.06 -1.62 M  1.00  d GYPL
     AGYE  EC   0.80   6  P      17:13:07.77 -1.62 M  1.00  d AGYE 
-    MILO  EC   0.81  36  P      17:13:07.73 -1.84 M  1.00  d MILO 
+    AGYE  EC   0.80   6  S      17:13:18.95 -1.62 M  1.00  d AGYE
+    ISPG  EC   0.80   6  P      17:13:05.58 -1.62 M  1.00  d AGYE 
+    ISPG  EC   0.80   6  S      17:13:15.87 -1.62 M  1.00  d AGYE
+    MILO  EC   0.81  36  P      17:13:18.95 -1.84 M  1.00  d MILO 
     COHC  EC   0.86  64  P      17:13:08.11 -1.90 M  1.00  d COHC 
     SUSE  EC   0.97 125  P      17:13:11.27  0.22 M  1.00  d SUSE 
     SUSE  EC   0.97 125  S      17:13:24.17 -0.50 M  1.00  . SUSE 

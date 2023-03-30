@@ -33,6 +33,7 @@ Origin:
 148 Phase arrivals:
     sta   net  dist  azi  phase   time       res    wt    sta  
     APLA  EC   0.42 300  P      17:13:06.34  0.33 M  1.00  u APLA 
+    APLA  EC   0.42 300  S      17:13:16.45  0.33 M  1.00  u APLA 	
     ACH1  EC   0.46 165  P      17:13:05.05 -1.27 M  1.00  . ACH1 
     ACH1  EC   0.46 165  S      17:13:15.43 -0.84 M  1.00  . ACH1 
     ACH2  EC   0.47 152  P      17:13:04.88 -1.58 M  1.00  . ACH2 
@@ -40,6 +41,7 @@ Origin:
     GYKA  EC   0.61  15  P      17:13:06.22 -1.46 M  1.00  d GYKA 
     GYKA  EC   0.61  15  S      17:13:16.99 -1.69 M  1.00  . GYKA 
     GYE1  EC   0.61  11  P      17:13:05.36 -2.32 M  1.00  d GYE1 
+    GYE1  EC   0.61  11  S      17:13:15.19 -2.32 M  1.00  d GYE1
     GYC2  EC   0.63  10  P      17:13:06.60 -1.32 M  1.00  d GYC2 
     GYC2  EC   0.63  10  S      17:13:17.35 -1.77 M  1.00  . GYC2 
     PCRA  EC   0.64 125  P      17:13:07.53 -0.46 M  1.00  d PCRA 
@@ -50,7 +52,9 @@ Origin:
     ARNL  EC   0.70 183  S      17:13:20.13 -0.10 M  1.00  . ARNL 
     GYE3  EC   0.70  11  P      17:13:05.83 -2.73 M  1.00  d GYE3 
     GYPL  EC   0.73   5  P      17:13:07.20 -1.62 M  1.00  d GYPL 
+    GYPL  EC   0.73   5  S      17:13:18.06 -1.62 M  1.00  d GYPL
     AGYE  EC   0.80   6  P      17:13:07.77 -1.62 M  1.00  d AGYE 
+    AGYE  EC   0.80   6  P      17:13:18.95 -1.62 M  1.00  d AGYE
     MILO  EC   0.81  36  P      17:13:07.73 -1.84 M  1.00  d MILO 
     COHC  EC   0.86  64  P      17:13:08.11 -1.90 M  1.00  d COHC 
     SUSE  EC   0.97 125  P      17:13:11.27  0.22 M  1.00  d SUSE 
@@ -76,6 +80,8 @@ Origin:
     SAGA  EC   1.84  64  P      17:13:22.36 -0.10 M  1.00  u SAGA 
     SAGA  EC   1.84  64  S      17:13:43.40 -1.74 M  1.00  . SAGA 
     PORT  EC   1.87  42  P      17:13:22.25 -0.56 M  1.00  d PORT 
+    AMIL  EC   2.03 340  P      17:13:09.66 -0.09 M  1.00  d AMIL
+    AMIL  EC   2.03 340  S      17:13:21.31 -0.09 M  1.00  d AMIL
     AMNT  EC   2.03 340  P      17:13:24.87 -0.09 M  1.00  d AMNT 
     AMNT  EC   2.03 340  S      17:13:50.18  0.54 M  1.00  . AMNT 
     SAG1  EC   2.03  71  P      17:13:25.32  0.18 M  1.00  u SAG1 
@@ -113,6 +119,8 @@ Origin:
     SLOR  EC   2.61  36  S      17:14:03.98  0.13 M  1.00  . SLOR 
     VCES  EC   2.62  39  P      17:13:33.66  0.69 M  1.00  d VCES 
     VCES  EC   2.62  39  S      17:14:04.79  0.77 M  1.00  . VCES 
+    ISPG  EC   2.62  39  P      17:13:05.58  0.77 M  1.00  . ISPG
+    ISPG  EC   2.62  39  S      17:13:15.87  0.77 M  1.00  . ISPG
     BMOR  EC   2.64  37  P      17:13:33.88  0.65 M  1.00  d BMOR 
     BMOR  EC   2.64  37  S      17:14:04.79  0.30 M  1.00  . BMOR 
     BNAS  EC   2.66  35  P      17:13:33.66  0.11 M  1.00  d BNAS 

@@ -8,6 +8,7 @@ from obspy.core.trace import Trace
 from scipy.signal import find_peaks,detrend
 from datetime import datetime
 from scipy.integrate import quad,trapz
+from scipy.integrate import trapezoid,simpson
 import os
 
 
@@ -26,7 +27,7 @@ only detrending
 file_dir = os.path.abspath(os.getcwd()) 
 data_folder_dir =  os.path.join(file_dir,"data")
 data_files_list = os.listdir(data_folder_dir)
-stations_name = ['AC07','ACH1','ACH2','ACUE','ALJ1','APLA','ARNL','GYKA']
+stations_name = list({file[3:7] for file in data_files_list})
 
 ### Defining event origin time ###
 
@@ -35,6 +36,8 @@ t0 = '2023-03-18 17:12:53.2'
 event_origin = datetime.strptime(t0, "%Y-%m-%d %H:%M:%S.%f")
 t0 = event_origin.isoformat()                     #ISO format
 t0 = UTCDateTime(t0)                              # method to convert date into compatible obspy fotmat
+
+
 
 
 
@@ -86,6 +89,7 @@ df.index = df['sta']
 rows = df.loc[df['sta'].isin(stations_name)][['sta','dist','azi','phase','time']]
 
 stations_data = dict()
+
 
 for station in stations_name:
     if station=='APLA':
@@ -258,10 +262,8 @@ fig.savefig("images/coda_wave_spectrum/all_coda_wave_spectrum_linear_scale_0_5.j
 
 """ Effective duration by Husid (1969) """
 
-from scipy.integrate import trapezoid,simpson
-def integrand_intensity(a):
-    return a**2
-f = lambda a,i:(a[i])**2
+
+
 
 def intensity_trapz(y,x,i):
     return trapezoid(y[:i],x[:i])/trapezoid(y,x)
@@ -289,7 +291,6 @@ def intensity_subplot(files_list,origin_time,dict_info):
     for i in range(0,len(files_list),3):
         for j in range(3):
             trace = obs.read('data/'+files_list[i+j])
-            trace.trim(origin_time,dict_info[files_list[i+j][3:7]]['P-arrival time'])
             data = trace[0]
             times = data.times()
             station_name  = data.stats.station
@@ -298,19 +299,18 @@ def intensity_subplot(files_list,origin_time,dict_info):
             dt = data.stats.delta
             detrended_data = detrend(data,type='linear')
             I_simps = [intensity_simps(np.array(data)**2,times,i) for i in range(1,len(times),100)]   
-            time = [times[i] for i in range(1,len(times),100)]
+            time = [times[i] for i in range(1,len(times),2000)]
             ## Plotting ##    
-            axes[i//3][j].plot(time,I_simps,linewidth=0.4)
-            axes[i//3][j].set_xlim(0, 120)
-            axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
-            axes[i//3][j].tick_params(axis='both',labelsize=7)
+            axes[i//3][j].plot(time,I_simps,'b-',linewidth=0.4,)
+            axes[i//3][j].axhline(0.05,color='r')
+            axes[i//3][j].axhline(0.95,color='r')
             axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
     return fig, axes
 
 ### Plotting spectra per each subset ###
 
-fig,axes = intensity_subplot(data_files_list[:3],t0,stations_data)                                   # change input
-fig.suptitle('Event: igepn2023fkei Time: {} \n Data: Arias Intensity')
+fig,axes = intensity_subplot(data_files_list,t0,stations_data)                                   # change input
+fig.suptitle('Event: igepn2023fkei Time: {} \n Arias Intensity')
 fig.supylabel(r'Intensity')
 fig.tight_layout(pad=1.25)
 fig.savefig("images/Intensity/all_noise_spectrum_linear_scale_0_5.jpeg",dpi=600)  # change input
