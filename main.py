@@ -39,7 +39,8 @@ t0 = UTCDateTime(t0)                              # method to convert date into 
 
 
 
-
+### TO DO:
+    ### Include inputs: (path to folder (type of graph), x_lim,linear,logarithmic)
 
 def raw_spectrum_subplot(files_list):  ### change from -3 secons before p-arrival and 3 seconds after coda wave lapse time
     n = len(files_list)//3    
