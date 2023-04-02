@@ -2,117 +2,329 @@
 import numpy as np
 from scipy.signal import find_peaks,detrend
 import obspy as obs
+import os
+import shutil
+from scipy.integrate import trapezoid,simpson
+import matplotlib.pylab as plt
 
 
-def fft_raw_data(data,N:int,dt:float,station:str,channel='xyz'):
-    """
-    Parameters
-    ----------
-    data : array/list
-        obtained from mseed file [0]
-    N : int
-        number of points.
-    dt : float
-        sampling time interval.
-    station : str
-        sensor label.
-    channel : str
-        direction/channel.
+""" 
 
-    Returns
-    -------
-    ax : Plot containing power spectrum of raw data.
-
-    """
-    detrended_data = detrend(data,type='linear')
-    fourier = np.fft.rfft(detrended_data)
-    freqs = np.fft.rfftfreq(N,dt)
-
-    return [fourier,freqs]
-
-def raw_HV(x_data,y_data,z_data,N:int,dt:float,station="TBD"):
-    fx = fft_raw_data(x_data, N, dt, station)[0]
-    fy = fft_raw_data(y_data, N, dt, station)[0]
-    fz = fft_raw_data(z_data, N, dt, station)[0]
-    freqs = fft_raw_data(z_data, N, dt, station)[1]
-    fx_amp = np.abs(fft_raw_data(x_data, N, dt, station)[0])
-    fy_amp = np.abs(fft_raw_data(y_data, N, dt, station)[0])
-    fz_amp = np.abs(fft_raw_data(z_data, N, dt, station)[0])
-    
-    sqr_av =  (np.sqrt(fx_amp**2+fy_amp**2)/2)/fz_amp
-    
-    return [sqr_av,freqs]
-    
-    
-
-class Signal:
-    def  __init__(self,dat1,dt,dat2=[],dat3=[],min_val=5500,max_val=12000,
-                  min_ratio=0.2,max_ratio=2.5,dt_window=200):
-        self.dat1 = dat1
-        self.dat2 = dat2
-        self.dat3 = dat3
-        self.dt = dt
-        self.dt_window = dt_window
-        self.min_val = min_val
-        self.max_val = max_val
-        self.min_ratio = min_ratio
-        self.max_ratio = max_ratio
-        # self.HV_processing_peaks()
-        self.HV_processing_sta_lta()
-        # self.HV_processing_sta_lta_eff()
-    
-    # def HV_processing_peaks(self):
-    #     HV = []
-    #     freqs = []
-    #     windows_x=self.dat1.slide(window_length=self.dt_window,step=self.dt_window,include_partial_windows=False)
-    #     windows_y=self.dat2.slide(window_length=self.dt_window,step=self.dt_window,include_partial_windows=False)
-    #     windows_z=self.dat3.slide(window_length=self.dt_window,step=self.dt_window,include_partial_windows=False)
+        RAW SPECTRUM 
         
-    #     for i,(winx,winy,winz) in enumerate(zip(windows_x,windows_y,windows_z)):
-    #         detrended_data_x = detrend(winx,type='linear')
-    #         detrended_data_y = detrend(winy, type='linear')
-    #         detrended_data_z = detrend(winz, type='linear')
-    #         bool1 = self.min_val < max(detrended_data_x) < self.max_val
-    #         bool2 = self.min_val < max(detrended_data_y) < self.max_val
-    #         bool3 = self.min_val < max(detrended_data_z) < self.max_val
-    #         if bool1 or bool2 or bool3:
-    #             continue
-    #         m =len(detrended_data_x)
-    #         tapered_data_x=np.hanning(m)*detrended_data_x
-    #         tapered_data_y=np.hanning(m)*detrended_data_y
-    #         tapered_data_z=np.hanning(m)*detrended_data_z
-    #         HV.append(raw_HV(tapered_data_x,tapered_data_y,tapered_data_z,m,self.dt)[0])
-    #         freqs.append(raw_HV(tapered_data_x,tapered_data_y,tapered_data_z,m,self.dt)[1])      
-    #     self.freqs_peaks = freqs
-    #     self.hv_peaks = HV
-        
-    def HV_processing_sta_lta(self):
-        HV = []
-        freqs = []
-        windows_x=self.dat1.slide(window_length=self.dt_window,step=self.dt_window,include_partial_windows=False)
-        windows_y=self.dat2.slide(window_length=self.dt_window,step=self.dt_window,include_partial_windows=False)
-        windows_z=self.dat3.slide(window_length=self.dt_window,step=self.dt_window,include_partial_windows=False)
-        df = self.dat1.stats.sampling_rate
-        for i,(winx,winy,winz) in enumerate(zip(windows_x,windows_y,windows_z)):
-            detrended_data_x = detrend(winx,type='linear')
-            detrended_data_y = detrend(winy, type='linear')
-            detrended_data_z = detrend(winz, type='linear')  
-            cft_x = classic_sta_lta(detrended_data_x,int(df*1), int(df*30))
-            cft_y = classic_sta_lta(detrended_data_y,int(df*1), int(df*30))
-            cft_z = classic_sta_lta(detrended_data_z,int(df*1), int(df*30))
-            bool1 = self.min_ratio < max(cft_x) < self.max_ratio
-            bool2 = self.min_ratio < max(cft_y) < self.max_ratio
-            bool3 = self.min_ratio < max(cft_z) < self.max_ratio
-            if bool1 and bool2 and bool3:
-                m =len(detrended_data_x)
-                tapered_data_x=np.hanning(m)*detrended_data_x
-                tapered_data_y=np.hanning(m)*detrended_data_y
-                tapered_data_z=np.hanning(m)*detrended_data_z
-                HV.append(raw_HV(tapered_data_x,tapered_data_y,tapered_data_z,m,self.dt)[0])
-                freqs.append(raw_HV(tapered_data_x,tapered_data_y,tapered_data_z,m,self.dt)[1])      
-        self.freqs_sta_lta = freqs
-        self.hv_sta_lta = HV
-        
-        
+        For each station, raw spectrum is obtained; processing includes 
+        only detrending
 
-            
+
+"""
+def raw_spectrum_plots(main_dir,files_set,xlim,scale,t0,plot_type='Raw_Spectrum'):
+    plots_dir = os.path.join(main_dir,"plots")
+    plot_dir = os.path.join(plots_dir,plot_type)
+    file_dir = os.path.join(plot_dir,plot_type +"_" + scale +"_fmax_"+ str(xlim) + ".jpeg")
+    if os.path.isdir(plot_dir):
+        shutil.rmtree(plot_dir)
+    os.mkdir(plot_dir)
+    
+    def raw_spectrum_subplot(files_list,x_lim,scale_type):  ### change from -3 secons before p-arrival and 3 seconds after coda wave lapse time
+        n = len(files_list)//3    
+        fig,axes = plt.subplots(n,3,figsize=(10,14))
+        for i in range(0,len(files_list),3):
+            for j in range(3):
+                trace = obs.read('data/'+files_list[i+j])
+                data = trace[0]
+                station_name  = data.stats.station
+                station_channel = data.stats.channel
+                npts = data.stats.npts
+                dt = data.stats.delta
+                detrended_data = detrend(data,type='linear')
+                raw_fft = np.fft.rfft(detrended_data)
+                power_spec = (np.abs(raw_fft))**2
+                freqs = np.fft.rfftfreq(npts,dt)      
+                ## Plotting ##    
+                if scale_type == "linear":
+                    axes[i//3][j].plot(freqs,power_spec,linewidth=0.5)
+                    axes[i//3][j].set_xlim(0, x_lim)
+                    axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
+                    axes[i//3][j].tick_params(axis='both',labelsize=6)
+                    axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+                elif scale_type == 'log':
+                    axes[i//3][j].semilogx(freqs,power_spec,linewidth=0.5)
+                    axes[i//3][j].set_xlim(0.1, x_lim)
+                    axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
+                    axes[i//3][j].tick_params(axis='both',labelsize=6)
+                    axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+        return fig, axes
+
+### Plotting spectra per each subset ###
+
+    fig,axes = raw_spectrum_subplot(files_set,xlim,scale)                                   # change input
+    fig.suptitle('Event: igepn2023fkei Time: {}'.format(t0),fontsize=8)
+    fig.supxlabel(r'f')
+    fig.supylabel(r'Power Spectrum')
+    fig.tight_layout(pad=1.25)
+    fig.savefig(file_dir,dpi=600)  # change input
+    
+    
+    
+""" 
+        NOISE SPECTRUM 
+        
+"""    
+
+def noise_spectrum_plots(main_dir,files_set,xlim,scale,stations_data,t0,dt_b,dt_a,plot_type='Noise_Spectrum',):
+    plots_dir = os.path.join(main_dir,"plots")
+    plot_dir = os.path.join(plots_dir,plot_type)
+    file_dir = os.path.join(plot_dir,plot_type +"_" + scale +"_fmax_"+ str(xlim) + ".jpeg")
+    if os.path.isdir(plot_dir):
+        shutil.rmtree(plot_dir)
+    os.mkdir(plot_dir)
+    
+    def noise_spectrum_subplot(files_list,x_lim,scale_type,origin_time,dict_info,dt_bo=0,dt_ap=0):
+        n = len(files_list)//3    
+        fig,axes = plt.subplots(n,3,figsize=(10,14))
+        for i in range(0,len(files_list),3):
+            for j in range(3):
+                trace = obs.read('data/'+files_list[i+j])
+                trace.trim(origin_time+dt_b,dict_info[files_list[i+j][3:7]]['P-arrival time']+dt_a)
+                data = trace[0]
+                station_name  = data.stats.station
+                station_channel = data.stats.channel
+                npts = data.stats.npts
+                dt = data.stats.delta
+                detrended_data = detrend(data,type='linear')
+                raw_fft = np.fft.rfft(detrended_data)
+                power_spec = (np.abs(raw_fft))**2
+                freqs = np.fft.rfftfreq(npts,dt)      
+                ## Plotting ##    
+                if scale_type == "linear":
+                    axes[i//3][j].plot(freqs,power_spec,linewidth=0.5)
+                    axes[i//3][j].set_xlim(0, x_lim)
+                    axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
+                    axes[i//3][j].tick_params(axis='both',labelsize=6)
+                    axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+                elif scale_type == 'log':
+                    axes[i//3][j].semilogx(freqs,power_spec,linewidth=0.5)
+                    axes[i//3][j].set_xlim(0.1, x_lim)
+                    axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
+                    axes[i//3][j].tick_params(axis='both',labelsize=6)
+                    axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+        return fig, axes
+
+    ### Plotting spectra per each subset ###
+
+    fig,axes = noise_spectrum_subplot(files_set,xlim,scale,t0,stations_data,dt_bo = dt_b,dt_ap = dt_a)                                  # change input
+    fig.suptitle('Event: igepn2023fkei Time: {} \n Noise prior to P-wave arrival'.format(t0),fontsize=10)
+    fig.supxlabel(r'f')
+    fig.supylabel(r'Power Spectrum')
+    fig.tight_layout(pad=1.25)
+    fig.savefig(file_dir,dpi=600)  # change input
+
+""" 
+
+        P-WAVE SPECTRUM 
+        
+"""    
+    
+def p_wave_spectrum_plots(main_dir,files_set,xlim,scale,stations_data,t0,plot_type='P_wave_Spectrum',dt_adjust = 0):
+    plots_dir = os.path.join(main_dir,"plots")
+    plot_dir = os.path.join(plots_dir,plot_type)
+    file_dir = os.path.join(plot_dir,plot_type +"_" + scale +"_fmax_"+ str(xlim) + ".jpeg")
+    if os.path.isdir(plot_dir):
+        shutil.rmtree(plot_dir)
+    os.mkdir(plot_dir)    
+
+    def p_wave_spectrum_subplot(files_list,x_lim,scale_type,dict_info,dt_adj=0):
+        n = len(files_list)//3    
+        fig,axes = plt.subplots(n,3,figsize=(10,14))
+        for i in range(0,len(files_list),3):
+            for j in range(3):
+                    trace = obs.read('data/'+files_list[i+j])
+                    trace.trim(dict_info[files_list[i+j][3:7]]['P-arrival time']+dt_adj,dict_info[files_list[i+j][3:7]]['S-arrival time']+dt_adj)
+                    data = trace[0]
+                    station_name  = data.stats.station
+                    station_channel = data.stats.channel
+                    npts = data.stats.npts
+                    dt = data.stats.delta
+                    detrended_data = detrend(data,type='linear')
+                    raw_fft = np.fft.rfft(detrended_data)
+                    power_spec = (np.abs(raw_fft))**2
+                    freqs = np.fft.rfftfreq(npts,dt)      
+                    ## Plotting ##   
+                    if scale_type == "linear":
+                        axes[i//3][j].plot(freqs,power_spec,linewidth=0.5)
+                        axes[i//3][j].set_xlim(0, x_lim)
+                        axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
+                        axes[i//3][j].tick_params(axis='both',labelsize=6)
+                        axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+                    elif scale_type == 'log':
+                        axes[i//3][j].semilogx(freqs,power_spec,linewidth=0.5)
+                        axes[i//3][j].set_xlim(0.1, x_lim)
+                        axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
+                        axes[i//3][j].tick_params(axis='both',labelsize=6)
+                        axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+        return fig, axes
+    
+    ### Plotting spectra per each subset ###
+    
+    fig,axes = p_wave_spectrum_subplot(files_set,xlim,scale,stations_data,dt_adj=dt_adjust)                                   # change input
+    fig.suptitle('Event: igepn2023fkei Time: {} \n P-wave lapse time'.format(t0))
+    fig.supxlabel(r'f')
+    fig.supylabel(r'Power Spectrum')
+    fig.tight_layout(pad=1.25)
+    fig.savefig(file_dir,dpi=600)  # change input
+
+""" 
+
+        S-WAVE SPECTRUM 
+        
+"""    
+
+def s_wave_spectrum_plots(main_dir,files_set,xlim,scale,stations_data,t0,plot_type='S_wave_Spectrum',dt_adjust = 0):
+    plots_dir = os.path.join(main_dir,"plots")
+    plot_dir = os.path.join(plots_dir,plot_type)
+    file_dir = os.path.join(plot_dir,plot_type +"_" + scale +"_fmax_"+ str(xlim) + ".jpeg")
+    if os.path.isdir(plot_dir):
+        shutil.rmtree(plot_dir)
+    os.mkdir(plot_dir)    
+    
+
+    def s_wave_spectrum_subplot(files_list,x_lim,scale_type,dict_info,origin_time,dt_adj=0):
+        n = len(files_list)//3    
+        fig,axes = plt.subplots(n,3,figsize=(10,14))
+        for i in range(0,len(files_list),3):
+            for j in range(3):
+                dt_s_wave = dict_info[files_list[i+j][3:7]]['S-arrival time'] - origin_time
+                trace = obs.read('data/'+files_list[i+j])
+                trace.trim(dict_info[files_list[i+j][3:7]]['S-arrival time'],dict_info[files_list[i+j][3:7]]['S-arrival time']+ dt_s_wave + dt_adj)  # s-wave windows lasts 2 times its arrival time
+                data = trace[0]
+                station_name  = data.stats.station
+                station_channel = data.stats.channel
+                npts = data.stats.npts
+                dt = data.stats.delta
+                detrended_data = detrend(data,type='linear')
+                raw_fft = np.fft.rfft(detrended_data)
+                power_spec = (np.abs(raw_fft))**2
+                freqs = np.fft.rfftfreq(npts,dt)      
+                ## Plotting ## 
+                if scale_type == "linear":
+                    axes[i//3][j].plot(freqs,power_spec,linewidth=0.5)
+                    axes[i//3][j].set_xlim(0, x_lim)
+                    axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
+                    axes[i//3][j].tick_params(axis='both',labelsize=6)
+                    axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+                elif scale_type == 'log':
+                    axes[i//3][j].semilogx(freqs,power_spec,linewidth=0.5)
+                    axes[i//3][j].set_xlim(0.1, x_lim)
+                    axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
+                    axes[i//3][j].tick_params(axis='both',labelsize=6)
+                    axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+        return fig, axes
+    
+    ### Plotting spectra per each subset ###
+    
+    fig,axes = s_wave_spectrum_subplot(files_set,xlim,scale,stations_data,t0,dt_adj = dt_adjust)                                   # change input
+    fig.suptitle('Event: igepn2023fkei Time: {} \n S-wave lapse time'.format(t0))
+    fig.supylabel(r'Power Spectrum')
+    fig.supxlabel(r'f')
+    fig.tight_layout(pad=1.25)
+    fig.savefig(file_dir,dpi=600) 
+    
+"""
+
+CODA-WAVE SPECTRUM
+
+"""
+def coda_wave_spectrum_plots(main_dir,files_set,xlim,scale,stations_data,t0,plot_type='Coda_wave_Spectrum',dt_adjust = 0,factor_s = 2, factor_e = 4):
+    plots_dir = os.path.join(main_dir,"plots")
+    plot_dir = os.path.join(plots_dir,plot_type)
+    file_dir = os.path.join(plot_dir,plot_type +"_" + scale +"_fmax_"+ str(xlim) + ".jpeg")
+    if os.path.isdir(plot_dir):
+        shutil.rmtree(plot_dir)
+    os.mkdir(plot_dir)    
+    
+    def coda_wave_spectrum_subplot(files_list,origin_time,dict_info,factor_start = 2,factor_end = 4):
+        n = len(files_list)//3    
+        fig,axes = plt.subplots(n,3,figsize=(10,14))
+        for i in range(0,len(files_list),3):
+            for j in range(3):
+                dt_s_wave = dict_info[files_list[i+j][3:7]]['S-arrival time'] - origin_time
+                trace = obs.read('data/'+files_list[i+j])
+                trace.trim(origin_time+factor_start*dt_s_wave,origin_time+factor_end*dt_s_wave)  # s-wave windows lasts 2 times its arrival time
+                data = trace[0]
+                station_name  = data.stats.station
+                station_channel = data.stats.channel
+                npts = data.stats.npts
+                dt = data.stats.delta
+                detrended_data = detrend(data,type='linear')
+                raw_fft = np.fft.rfft(detrended_data)
+                power_spec = (np.abs(raw_fft))**2
+                freqs = np.fft.rfftfreq(npts,dt)      
+                ## Plotting ##    
+                axes[i//3][j].plot(freqs,power_spec,linewidth=0.5)
+                axes[i//3][j].set_xlim(0, 5)
+                axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
+                axes[i//3][j].tick_params(axis='both',labelsize=6)
+                axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+        return fig, axes
+    
+    ### Plotting spectra per each subset ###
+    
+    fig,axes = coda_wave_spectrum_subplot(files_set,t0,stations_data,factor_start=factor_s,factor_end = factor_e)                                    # change input
+    fig.suptitle('Event: igepn2023fkei Time: {} \n Coda wave lapse time'.format(t0))
+    fig.supylabel(r'Power Spectrum')
+    fig.supxlabel(r'f')
+    fig.tight_layout(pad=1.25)
+    fig.savefig(file_dir,dpi=600) 
+
+
+""" 
+
+EFFECTIVE DURATION in terms of INTENSITY
+
+"""
+
+def intensity_trapz(y,x,i):
+    return trapezoid(y[:i],x[:i])/trapezoid(y,x)
+
+def intensity_simps(y,x,i):
+    return simpson(y[:i],x[:i])/simpson(y,x)   
+
+def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensity'):
+    plots_dir = os.path.join(main_dir,"plots")
+    plot_dir = os.path.join(plots_dir,plot_type)
+    file_dir = os.path.join(plot_dir,plot_type + ".jpeg")
+    if os.path.isdir(plot_dir):
+        shutil.rmtree(plot_dir)
+    os.mkdir(plot_dir)    
+      
+    def intensity_subplot(files_list,origin_time,dict_info):
+        n = len(files_list)//3    
+        fig,axes = plt.subplots(n,3,figsize=(10,14))
+        for i in range(0,len(files_list),3):
+            for j in range(3):
+                trace = obs.read('data/'+files_list[i+j])
+                ending_time = trace[0].stats.endtime
+                trace.trim(origin_time,ending_time)  # trace trimmed from event start to ending time
+                data = trace[0]
+                detrended_data = detrend(data,type='linear')
+                times = data.times()
+                station_name  = data.stats.station
+                station_channel = data.stats.channel
+                dt = data.stats.delta
+                I_simps = [intensity_simps(np.array(detrended_data)**2,times,i) for i in range(1,len(times))]   
+                time = [times[i]*dt for i in range(1,len(times))]
+                ## Plotting ##    
+                axes[i//3][j].plot(time,I_simps,'b-',linewidth=0.5)
+                axes[i//3][j].axhline(0.05,color='r',linewidth=0.4)
+                axes[i//3][j].axhline(0.95,color='r',linewidth=0.4)
+                axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+        return fig, axes
+    
+    ### Plotting spectra per each subset ###
+    
+    fig,axes = intensity_subplot(files_set,t0,stations_data)                                   # change input
+    fig.suptitle('Event: igepn2023fkei Time: {} \n Arias Intensity')
+    fig.supylabel(r'Intensity')
+    fig.tight_layout(pad=1.25)
+    fig.savefig(file_dir,dpi=600)  # change input    
+        
