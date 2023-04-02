@@ -27,10 +27,6 @@ t0 = UTCDateTime(t0)                              # method to convert date into 
 
 
 
-### TO DO:
-    ### Include inputs: (path to folder (type of graph), x_lim,linear,logarithmic)
-
-
 
 ################################################################################
 """  P-Wave and S-Wave arrival times   """
@@ -87,7 +83,7 @@ utils.s_wave_spectrum_plots(main_dir,data_files_list,10,'linear',
 utils.coda_wave_spectrum_plots(main_dir,data_files_list,10,'linear',
                                stations_data,t0)
 
-
+#inicio 3:42pm
 
 
 """ Effective duration by Husid (1969) """

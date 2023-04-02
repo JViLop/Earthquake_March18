@@ -242,7 +242,7 @@ def coda_wave_spectrum_plots(main_dir,files_set,xlim,scale,stations_data,t0,plot
         shutil.rmtree(plot_dir)
     os.mkdir(plot_dir)    
     
-    def coda_wave_spectrum_subplot(files_list,origin_time,dict_info,factor_start = 2,factor_end = 4):
+    def coda_wave_spectrum_subplot(files_list,origin_time,x_lim,scale_type,dict_info,factor_start = 2,factor_end = 4):
         n = len(files_list)//3    
         fig,axes = plt.subplots(n,3,figsize=(10,14))
         for i in range(0,len(files_list),3):
@@ -258,18 +258,26 @@ def coda_wave_spectrum_plots(main_dir,files_set,xlim,scale,stations_data,t0,plot
                 detrended_data = detrend(data,type='linear')
                 raw_fft = np.fft.rfft(detrended_data)
                 power_spec = (np.abs(raw_fft))**2
-                freqs = np.fft.rfftfreq(npts,dt)      
-                ## Plotting ##    
-                axes[i//3][j].plot(freqs,power_spec,linewidth=0.5)
-                axes[i//3][j].set_xlim(0, 5)
-                axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
-                axes[i//3][j].tick_params(axis='both',labelsize=6)
-                axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+                freqs = np.fft.rfftfreq(npts,dt)  
+                ## Plotting ## 
+                if scale_type == "linear":
+                    axes[i//3][j].plot(freqs,power_spec,linewidth=0.5)
+                    axes[i//3][j].set_xlim(0, x_lim)
+                    axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
+                    axes[i//3][j].tick_params(axis='both',labelsize=6)
+                    axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+                elif scale_type == 'log':
+                    axes[i//3][j].semilogx(freqs,power_spec,linewidth=0.5)
+                    axes[i//3][j].set_xlim(0.1, x_lim)
+                    axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
+                    axes[i//3][j].tick_params(axis='both',labelsize=6)
+                    axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+                   
         return fig, axes
     
     ### Plotting spectra per each subset ###
     
-    fig,axes = coda_wave_spectrum_subplot(files_set,t0,stations_data,factor_start=factor_s,factor_end = factor_e)                                    
+    fig,axes = coda_wave_spectrum_subplot(files_set,t0,xlim,scale,stations_data,factor_start=factor_s,factor_end = factor_e)                                    
     fig.suptitle('Event: igepn2023fkei Time: {} \n Coda wave lapse time'.format(t0))
     fig.supylabel(r'Power Spectrum')
     fig.supxlabel(r'f')
@@ -299,7 +307,7 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
       
     def intensity_subplot(files_list,origin_time,dict_info):
         n = len(files_list)//3    
-        fig,axes = plt.subplots(n,3,figsize=(10,14))
+        fig,axes = plt.subplots(n,3,figsize=(12,15))
         for i in range(0,len(files_list),3):
             for j in range(3):
                 trace = obs.read('data/'+files_list[i+j])
@@ -310,12 +318,12 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
                 times = data.times()
                 station_name  = data.stats.station
                 station_channel = data.stats.channel
-                dt = data.stats.delta
                 I_simps = [intensity_simps(np.array(detrended_data)**2,times,i) for i in range(1,len(times))]   
-                time = times[1:]*dt
+                time = times[1:]
                 ## Plotting ##    
                 axes[i//3][j].plot(time,I_simps,'b-',linewidth=0.5)
-                axes[i//3][j].set_xticks(np.arange(0,len(time)+1,0.25))
+                axes[i//3][j].set_xlim(0,120)
+                axes[i//3][j].set_xticks(np.arange(0,120,20))
                 axes[i//3][j].axhline(0.05,color='r',linewidth=0.4)
                 axes[i//3][j].axhline(0.95,color='r',linewidth=0.4)
                 axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
@@ -324,7 +332,7 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
     ### Plotting spectra per each subset ###
     
     fig,axes = intensity_subplot(files_set,t0,stations_data)                                   
-    fig.suptitle('Event: igepn2023fkei Time: {} \n Arias Intensity'.format(t0))
+    fig.suptitle('Event: igepn2023fkei Time: {} \n Arias Intensity from event origin'.format(t0))
     fig.supylabel(r'Intensity')
     fig.tight_layout(pad=1.25)
     fig.savefig(file_dir,dpi=600)  
