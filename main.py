@@ -11,8 +11,6 @@ data_folder_dir =  os.path.join(main_dir,"data")
 utils_dir = os.path.join(main_dir,"utils")
 
 
-
-
 ### Importing SAC files ###
 
 

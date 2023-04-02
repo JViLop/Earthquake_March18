@@ -57,12 +57,12 @@ def raw_spectrum_plots(main_dir,files_set,xlim,scale,t0,plot_type='Raw_Spectrum'
 
 ### Plotting spectra per each subset ###
 
-    fig,axes = raw_spectrum_subplot(files_set,xlim,scale)                                   # change input
+    fig,axes = raw_spectrum_subplot(files_set,xlim,scale)                                  
     fig.suptitle('Event: igepn2023fkei Time: {}'.format(t0),fontsize=8)
     fig.supxlabel(r'f')
     fig.supylabel(r'Power Spectrum')
     fig.tight_layout(pad=1.25)
-    fig.savefig(file_dir,dpi=600)  # change input
+    fig.savefig(file_dir,dpi=600)  
     
     
     
@@ -112,12 +112,12 @@ def noise_spectrum_plots(main_dir,files_set,xlim,scale,stations_data,t0,dt_b,dt_
 
     ### Plotting spectra per each subset ###
 
-    fig,axes = noise_spectrum_subplot(files_set,xlim,scale,t0,stations_data,dt_bo = dt_b,dt_ap = dt_a)                                  # change input
+    fig,axes = noise_spectrum_subplot(files_set,xlim,scale,t0,stations_data,dt_bo = dt_b,dt_ap = dt_a)                                
     fig.suptitle('Event: igepn2023fkei Time: {} \n Noise prior to P-wave arrival'.format(t0),fontsize=10)
     fig.supxlabel(r'f')
     fig.supylabel(r'Power Spectrum')
     fig.tight_layout(pad=1.25)
-    fig.savefig(file_dir,dpi=600)  # change input
+    fig.savefig(file_dir,dpi=600)  
 
 """ 
 
@@ -166,12 +166,12 @@ def p_wave_spectrum_plots(main_dir,files_set,xlim,scale,stations_data,t0,plot_ty
     
     ### Plotting spectra per each subset ###
     
-    fig,axes = p_wave_spectrum_subplot(files_set,xlim,scale,stations_data,dt_adj=dt_adjust)                                   # change input
+    fig,axes = p_wave_spectrum_subplot(files_set,xlim,scale,stations_data,dt_adj=dt_adjust)                                   
     fig.suptitle('Event: igepn2023fkei Time: {} \n P-wave lapse time'.format(t0))
     fig.supxlabel(r'f')
     fig.supylabel(r'Power Spectrum')
     fig.tight_layout(pad=1.25)
-    fig.savefig(file_dir,dpi=600)  # change input
+    fig.savefig(file_dir,dpi=600)  
 
 """ 
 
@@ -222,7 +222,7 @@ def s_wave_spectrum_plots(main_dir,files_set,xlim,scale,stations_data,t0,plot_ty
     
     ### Plotting spectra per each subset ###
     
-    fig,axes = s_wave_spectrum_subplot(files_set,xlim,scale,stations_data,t0,dt_adj = dt_adjust)                                   # change input
+    fig,axes = s_wave_spectrum_subplot(files_set,xlim,scale,stations_data,t0,dt_adj = dt_adjust)                                  
     fig.suptitle('Event: igepn2023fkei Time: {} \n S-wave lapse time'.format(t0))
     fig.supylabel(r'Power Spectrum')
     fig.supxlabel(r'f')
@@ -269,7 +269,7 @@ def coda_wave_spectrum_plots(main_dir,files_set,xlim,scale,stations_data,t0,plot
     
     ### Plotting spectra per each subset ###
     
-    fig,axes = coda_wave_spectrum_subplot(files_set,t0,stations_data,factor_start=factor_s,factor_end = factor_e)                                    # change input
+    fig,axes = coda_wave_spectrum_subplot(files_set,t0,stations_data,factor_start=factor_s,factor_end = factor_e)                                    
     fig.suptitle('Event: igepn2023fkei Time: {} \n Coda wave lapse time'.format(t0))
     fig.supylabel(r'Power Spectrum')
     fig.supxlabel(r'f')
@@ -312,9 +312,10 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
                 station_channel = data.stats.channel
                 dt = data.stats.delta
                 I_simps = [intensity_simps(np.array(detrended_data)**2,times,i) for i in range(1,len(times))]   
-                time = [times[i]*dt for i in range(1,len(times))]
+                time = times[1:]*dt
                 ## Plotting ##    
                 axes[i//3][j].plot(time,I_simps,'b-',linewidth=0.5)
+                axes[i//3][j].set_xticks(np.arange(0,len(time)+1,0.25))
                 axes[i//3][j].axhline(0.05,color='r',linewidth=0.4)
                 axes[i//3][j].axhline(0.95,color='r',linewidth=0.4)
                 axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
@@ -322,9 +323,9 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
     
     ### Plotting spectra per each subset ###
     
-    fig,axes = intensity_subplot(files_set,t0,stations_data)                                   # change input
-    fig.suptitle('Event: igepn2023fkei Time: {} \n Arias Intensity')
+    fig,axes = intensity_subplot(files_set,t0,stations_data)                                   
+    fig.suptitle('Event: igepn2023fkei Time: {} \n Arias Intensity'.format(t0))
     fig.supylabel(r'Intensity')
     fig.tight_layout(pad=1.25)
-    fig.savefig(file_dir,dpi=600)  # change input    
+    fig.savefig(file_dir,dpi=600)  
         
