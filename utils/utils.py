@@ -320,8 +320,15 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
                 station_channel = data.stats.channel
                 I_simps = [intensity_simps(np.array(detrended_data)**2,times,i) for i in range(1,len(times))]   
                 time = times[1:]
+                init_percent = 0.05*np.ones(len(I_simps)) 
+                end_percent = 0.95*np.ones(len(I_simps))
+                idx_5 = np.argwhere(np.diff(np.sign(np.array(I_simps)-init_percent))).flatten()
+                idx_95 = np.argwhere(np.diff(np.sign(np.array(I_simps)-end_percent))).flatten()
+                x_eff_5 = (time[idx_5][0],np.array(I_simps)[idx_5][0])
+                x_eff_95 = (time[idx_95][0],np.array(I_simps)[idx_95][0])
                 ## Plotting ##    
                 axes[i//3][j].plot(time,I_simps,'b-',linewidth=0.5)
+                axes[i//3][j].plot(x_eff_5[0],x_eff_5[1],'ro',x_eff_95[0],x_eff_95[1],'ko',)
                 axes[i//3][j].set_xlim(0,120)
                 axes[i//3][j].set_xticks(np.arange(0,120,20))
                 axes[i//3][j].axhline(0.05,color='r',linewidth=0.4)
