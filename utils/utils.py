@@ -328,11 +328,13 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
                 x_eff_95 = (time[idx_95][0],np.array(I_simps)[idx_95][0])
                 ## Plotting ##    
                 axes[i//3][j].plot(time,I_simps,'b-',linewidth=0.5)
-                axes[i//3][j].plot(x_eff_5[0],x_eff_5[1],'ro',x_eff_95[0],x_eff_95[1],'ko',)
+                axes[i//3][j].plot(x_eff_5[0],x_eff_5[1],'ro',x_eff_95[0],x_eff_95[1],'ro',markersize=4)
                 axes[i//3][j].set_xlim(0,120)
                 axes[i//3][j].set_xticks(np.arange(0,120,20))
                 axes[i//3][j].axhline(0.05,color='r',linewidth=0.4)
                 axes[i//3][j].axhline(0.95,color='r',linewidth=0.4)
+                axes[i//3][j].axvline(time[idx_5][0],color='r',linewidth=0.4)
+                axes[i//3][j].axvline(time[idx_95][0],color='r',linewidth=0.4)
                 axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
         return fig, axes
     
