@@ -308,6 +308,7 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
     def intensity_subplot(files_list,origin_time,dict_info):
         n = len(files_list)//3    
         fig,axes = plt.subplots(n,3,figsize=(12,15))
+        fig1,axes1 = plt.subplots(n,3,figsize=(12,15))
         for i in range(0,len(files_list),3):
             for j in range(3):
                 trace = obs.read('data/'+files_list[i+j])
@@ -326,9 +327,11 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
                 idx_95 = np.argwhere(np.diff(np.sign(np.array(I_simps)-end_percent))).flatten()
                 x_eff_5 = (time[idx_5][0],np.array(I_simps)[idx_5][0])
                 x_eff_95 = (time[idx_95][0],np.array(I_simps)[idx_95][0])
-                ## Plotting ##    
+                
+                ## Plotting Arias intensity ##   
+                
                 axes[i//3][j].plot(time,I_simps,'b-',linewidth=0.5)
-                axes[i//3][j].plot(x_eff_5[0],x_eff_5[1],'ro',x_eff_95[0],x_eff_95[1],'ro',markersize=4)
+                axes[i//3][j].plot(x_eff_5[0],x_eff_5[1],'ro',x_eff_95[0],x_eff_95[1],'ro',markersize=3)
                 axes[i//3][j].set_xlim(0,120)
                 axes[i//3][j].set_xticks(np.arange(0,120,20))
                 axes[i//3][j].axhline(0.05,color='r',linewidth=0.4)
@@ -336,13 +339,36 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
                 axes[i//3][j].axvline(time[idx_5][0],color='r',linewidth=0.4)
                 axes[i//3][j].axvline(time[idx_95][0],color='r',linewidth=0.4)
                 axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
-        return fig, axes
+               
+                ## Plotting Ground-Motion
+                p_time = dict_info[files_list[i+j][3:7]]['P-arrival time']-origin_time
+                s_time = dict_info[files_list[i+j][3:7]]['S-arrival time']-origin_time
+                coda_time = 2*s_time
+                axes1[i//3][j].plot(times,data,'r-',linewidth=0.5)
+                axes1[i//3][j].axvline(p_time,color='k',linewidth=0.4)
+                axes1[i//3][j].axvline(s_time,color='g',linewidth=0.4)
+                axes1[i//3][j].axvline(coda_time,color='b',linewidth=0.4)
+                axes1[i//3][j].annotate('Arias\nDuration', xy=(time[idx_5][0], time[idx_95][0]), ha='center', va='top',fontsize=6)
+                axes1[i//3][j].annotate('P-wave\narrival', xy=(p_time,max(data)), ha='center', va='top',fontsize=5)
+                axes1[i//3][j].annotate('S-wave\narrival', xy=(s_time,max(data)), ha='center', va='top',fontsize=5)
+                axes1[i//3][j].annotate('Coda-wave\narrival', xy=(coda_time,max(data)), ha='center', va='top',fontsize=5)
+                axes1[i//3][j].axvline(coda_time,color='m',linewidth=0.4)
+                axes1[i//3][j].axvline(time[idx_5][0],color='r', linestyle='--',linewidth=0.4)
+                axes1[i//3][j].axvline(time[idx_95][0],color='r',linestyle='--',linewidth=0.4)
+                axes1[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+        
+        
+        return fig,axes,fig1,axes1
     
     ### Plotting spectra per each subset ###
     
-    fig,axes = intensity_subplot(files_set,t0,stations_data)                                   
+    fig,axes,fig1,axes1 = intensity_subplot(files_set,t0,stations_data)                                   
     fig.suptitle('Event: igepn2023fkei Time: {} \n Arias Intensity from event origin'.format(t0))
     fig.supylabel(r'Intensity')
     fig.tight_layout(pad=1.25)
-    fig.savefig(file_dir,dpi=600)  
+    fig.savefig(file_dir,dpi=600)
+    fig1.suptitle('Event: igepn2023fkei Time: {} \n Acceleration from event origin'.format(t0))
+    fig1.supylabel(r'Acceleration')
+    fig1.tight_layout(pad=1.25)
+    fig1.savefig(file_dir,dpi=600) 
         
