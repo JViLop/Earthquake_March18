@@ -1,6 +1,8 @@
     sta   net  dist  azi  phase   time       res    wt    sta  
     APLA  EC   0.42 300  P      17:13:06.34  0.33 M  1.00  u APLA 
     APLA  EC   0.42 300  S      17:13:16.45  0.33 M  1.00  u APLA
+    AMIL  EC   0.42 300  P      17:13:09.66  0.33 M  1.00  u AMIL 
+    AMIL  EC   0.42 300  S      17:13:21.31  0.33 M  1.00  u AMIL
     ACH1  EC   0.46 165  P      17:13:05.05 -1.27 M  1.00  . ACH1 
     ACH1  EC   0.46 165  S      17:13:15.43 -0.84 M  1.00  . ACH1 
     ACH2  EC   0.47 152  P      17:13:04.88 -1.58 M  1.00  . ACH2 
@@ -29,6 +31,7 @@
     ISPG  EC   0.80   6  S      17:13:15.87 -1.62 M  1.00  d AGYE
     MILO  EC   0.81  36  P      17:13:18.95 -1.84 M  1.00  d MILO 
     COHC  EC   0.86  64  P      17:13:08.11 -1.90 M  1.00  d COHC 
+    COHC  EC   0.86  64  S      17:13:19.49 -1.90 M  1.00  d COHC 
     SUSE  EC   0.97 125  P      17:13:11.27  0.22 M  1.00  d SUSE 
     SUSE  EC   0.97 125  S      17:13:24.17 -0.50 M  1.00  . SUSE 
     ACUE  EC   1.07  93  P      17:13:11.50 -0.74 M  1.00  u ACUE 

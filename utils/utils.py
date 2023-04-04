@@ -27,7 +27,7 @@ def raw_spectrum_plots(main_dir,files_set,xlim,scale,t0,plot_type='Raw_Spectrum'
     
     def raw_spectrum_subplot(files_list,x_lim,scale_type):  ### change from -3 secons before p-arrival and 3 seconds after coda wave lapse time
         n = len(files_list)//3    
-        fig,axes = plt.subplots(n,3,figsize=(10,14))
+        fig,axes = plt.subplots(n,3,figsize=(12,16))
         for i in range(0,len(files_list),3):
             for j in range(3):
                 trace = obs.read('data/'+files_list[i+j])
@@ -81,7 +81,7 @@ def noise_spectrum_plots(main_dir,files_set,xlim,scale,stations_data,t0,dt_b,dt_
     
     def noise_spectrum_subplot(files_list,x_lim,scale_type,origin_time,dict_info,dt_bo=0,dt_ap=0):
         n = len(files_list)//3    
-        fig,axes = plt.subplots(n,3,figsize=(10,14))
+        fig,axes = plt.subplots(n,3,figsize=(12,16))
         for i in range(0,len(files_list),3):
             for j in range(3):
                 trace = obs.read('data/'+files_list[i+j])
@@ -135,7 +135,7 @@ def p_wave_spectrum_plots(main_dir,files_set,xlim,scale,stations_data,t0,plot_ty
 
     def p_wave_spectrum_subplot(files_list,x_lim,scale_type,dict_info,dt_adj=0):
         n = len(files_list)//3    
-        fig,axes = plt.subplots(n,3,figsize=(10,14))
+        fig,axes = plt.subplots(n,3,figsize=(12,16))
         for i in range(0,len(files_list),3):
             for j in range(3):
                     trace = obs.read('data/'+files_list[i+j])
@@ -190,7 +190,7 @@ def s_wave_spectrum_plots(main_dir,files_set,xlim,scale,stations_data,t0,plot_ty
 
     def s_wave_spectrum_subplot(files_list,x_lim,scale_type,dict_info,origin_time,dt_adj=0):
         n = len(files_list)//3    
-        fig,axes = plt.subplots(n,3,figsize=(10,14))
+        fig,axes = plt.subplots(n,3,figsize=(12,16))
         for i in range(0,len(files_list),3):
             for j in range(3):
                 dt_s_wave = dict_info[files_list[i+j][3:7]]['S-arrival time'] - origin_time
@@ -244,7 +244,7 @@ def coda_wave_spectrum_plots(main_dir,files_set,xlim,scale,stations_data,t0,plot
     
     def coda_wave_spectrum_subplot(files_list,origin_time,x_lim,scale_type,dict_info,factor_start = 2,factor_end = 4):
         n = len(files_list)//3    
-        fig,axes = plt.subplots(n,3,figsize=(10,14))
+        fig,axes = plt.subplots(n,3,figsize=(12,16))
         for i in range(0,len(files_list),3):
             for j in range(3):
                 dt_s_wave = dict_info[files_list[i+j][3:7]]['S-arrival time'] - origin_time
@@ -307,8 +307,8 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
       
     def intensity_subplot(files_list,origin_time,dict_info):
         n = len(files_list)//3    
-        fig,axes = plt.subplots(n,3,figsize=(12,15))
-        fig1,axes1 = plt.subplots(n,3,figsize=(12,15))
+        fig,axes = plt.subplots(n,3,figsize=(12,16))
+        fig1,axes1 = plt.subplots(n,3,figsize=(12,16))
         for i in range(0,len(files_list),3):
             for j in range(3):
                 trace = obs.read('data/'+files_list[i+j])
@@ -349,13 +349,13 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
                 axes1[i//3][j].axvline(p_time,color='b',linewidth=0.6)
                 axes1[i//3][j].axvline(s_time,color='b',linewidth=0.6)
                 axes1[i//3][j].axvline(coda_time,color='b',linewidth=0.6)
-                axes1[i//3][j].annotate('Effec.\nDuration', xy=(time[idx_5][0]/2+time[idx_95][0]/2, max(data)//2), ha='center', va='top',fontsize=6)
-                axes1[i//3][j].annotate( "", xy=(time[idx_5][0],max(data)/2), xytext=(time[idx_95][0], max(data)/2),arrowprops=dict( arrowstyle="|-|", shrinkA=0, shrinkB=0) )
-                axes1[i//3][j].annotate('P\n', xy=(p_time,max(data)), ha='center', va='top',fontsize=8,rotation=90)
-                axes1[i//3][j].annotate('S\n', xy=(s_time,max(data)), ha='center', va='top',fontsize=8,rotation=90)
-                axes1[i//3][j].annotate('Coda\n', xy=(coda_time,max(data)), ha='center', va='top',fontsize=8,rotation = 90)
-                axes1[i//3][j].axvline(time[idx_5][0],color='k',linewidth=0.6)
-                axes1[i//3][j].axvline(time[idx_95][0],color='k',linewidth=0.6)
+                axes1[i//3][j].annotate('Effec.\nDuration', xy=(time[idx_5][0]/2+time[idx_95][0]/2, max(data)/2.4), ha='center', va='top',fontsize=5)
+                axes1[i//3][j].annotate( "", xy=(time[idx_5][0],max(data)/2), xytext=(time[idx_95][0], max(data)/2),arrowprops=dict(arrowstyle="<|-|>,head_width=0.2",facecolor='k', linewidth=0.4, shrinkA=0, shrinkB=0) )
+                axes1[i//3][j].annotate('P\n', xy=(p_time,max(data)), ha='center', va='top',fontsize=6,rotation=90)
+                axes1[i//3][j].annotate('S\n', xy=(s_time,max(data)), ha='center', va='top',fontsize=6,rotation=90)
+                axes1[i//3][j].annotate('Coda\n', xy=(coda_time,max(data)), ha='center', va='top',fontsize=6,rotation = 90)
+                axes1[i//3][j].axvline(time[idx_5][0],color='k',linestyle='--',linewidth=0.6)
+                axes1[i//3][j].axvline(time[idx_95][0],color='k',linestyle='--',linewidth=0.6)
                 axes1[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
         
         
