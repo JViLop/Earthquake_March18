@@ -89,5 +89,5 @@ utils.coda_wave_spectrum_plots(main_dir,data_files_list,10,'linear',
 """ Effective duration by Husid (1969) """
 
 
-utils.intensity_plots(main_dir,data_files_list[:6],stations_data,t0)
+utils.intensity_plots(main_dir,data_files_list,stations_data,t0)
 

@@ -344,17 +344,18 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
                 p_time = dict_info[files_list[i+j][3:7]]['P-arrival time']-origin_time
                 s_time = dict_info[files_list[i+j][3:7]]['S-arrival time']-origin_time
                 coda_time = 2*s_time
-                axes1[i//3][j].plot(times,data,'r-',linewidth=0.5)
-                axes1[i//3][j].axvline(p_time,color='k',linewidth=0.4)
-                axes1[i//3][j].axvline(s_time,color='g',linewidth=0.4)
-                axes1[i//3][j].axvline(coda_time,color='b',linewidth=0.4)
-                axes1[i//3][j].annotate('Arias\nDuration', xy=(time[idx_5][0], time[idx_95][0]), ha='center', va='top',fontsize=6)
-                axes1[i//3][j].annotate('P-wave\narrival', xy=(p_time,max(data)), ha='center', va='top',fontsize=5)
-                axes1[i//3][j].annotate('S-wave\narrival', xy=(s_time,max(data)), ha='center', va='top',fontsize=5)
-                axes1[i//3][j].annotate('Coda-wave\narrival', xy=(coda_time,max(data)), ha='center', va='top',fontsize=5)
-                axes1[i//3][j].axvline(coda_time,color='m',linewidth=0.4)
-                axes1[i//3][j].axvline(time[idx_5][0],color='r', linestyle='--',linewidth=0.4)
-                axes1[i//3][j].axvline(time[idx_95][0],color='r',linestyle='--',linewidth=0.4)
+                axes1[i//3][j].plot(times,data,'r-',linewidth=0.4)
+                axes1[i//3][j].set_xlim(0,130)
+                axes1[i//3][j].axvline(p_time,color='b',linewidth=0.6)
+                axes1[i//3][j].axvline(s_time,color='b',linewidth=0.6)
+                axes1[i//3][j].axvline(coda_time,color='b',linewidth=0.6)
+                axes1[i//3][j].annotate('Effec.\nDuration', xy=(time[idx_5][0]/2+time[idx_95][0]/2, max(data)//2), ha='center', va='top',fontsize=6)
+                axes1[i//3][j].annotate( "", xy=(time[idx_5][0],max(data)/2), xytext=(time[idx_95][0], max(data)/2),arrowprops=dict( arrowstyle="|-|", shrinkA=0, shrinkB=0) )
+                axes1[i//3][j].annotate('P\n', xy=(p_time,max(data)), ha='center', va='top',fontsize=8,rotation=90)
+                axes1[i//3][j].annotate('S\n', xy=(s_time,max(data)), ha='center', va='top',fontsize=8,rotation=90)
+                axes1[i//3][j].annotate('Coda\n', xy=(coda_time,max(data)), ha='center', va='top',fontsize=8,rotation = 90)
+                axes1[i//3][j].axvline(time[idx_5][0],color='k',linewidth=0.6)
+                axes1[i//3][j].axvline(time[idx_95][0],color='k',linewidth=0.6)
                 axes1[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
         
         
@@ -365,10 +366,12 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
     fig,axes,fig1,axes1 = intensity_subplot(files_set,t0,stations_data)                                   
     fig.suptitle('Event: igepn2023fkei Time: {} \n Arias Intensity from event origin'.format(t0))
     fig.supylabel(r'Intensity')
+    fig.supxlabel(r'Time')
     fig.tight_layout(pad=1.25)
     fig.savefig(file_dir,dpi=600)
     fig1.suptitle('Event: igepn2023fkei Time: {} \n Acceleration from event origin'.format(t0))
     fig1.supylabel(r'Acceleration')
+    fig1.supxlabel(r'Time')
     fig1.tight_layout(pad=1.25)
     fig1.savefig(file_dir,dpi=600) 
         
