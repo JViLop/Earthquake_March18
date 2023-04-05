@@ -300,7 +300,8 @@ def intensity_simps(y,x,i):
 def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensity'):
     plots_dir = os.path.join(main_dir,"plots")
     plot_dir = os.path.join(plots_dir,plot_type)
-    file_dir = os.path.join(plot_dir,plot_type + ".jpeg")
+    file_dir= os.path.join(plot_dir,plot_type + ".jpeg")
+    file_dir_acc= os.path.join(plot_dir,"Accelerations" + ".jpeg")
     if os.path.isdir(plot_dir):
         shutil.rmtree(plot_dir)
     os.mkdir(plot_dir)    
@@ -350,7 +351,7 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
                 axes1[i//3][j].axvline(s_time,color='b',linewidth=0.6)
                 axes1[i//3][j].axvline(coda_time,color='b',linewidth=0.6)
                 axes1[i//3][j].annotate('Effec.\nDuration', xy=(time[idx_5][0]/2+time[idx_95][0]/2, max(data)/2.4), ha='center', va='top',fontsize=5)
-                axes1[i//3][j].annotate( "", xy=(time[idx_5][0],max(data)/2), xytext=(time[idx_95][0], max(data)/2),arrowprops=dict(arrowstyle="<|-|>,head_width=0.2",facecolor='k', linewidth=0.4, shrinkA=0, shrinkB=0) )
+                axes1[i//3][j].annotate( "", xy=(time[idx_5][0],max(data)/2), xytext=(time[idx_95][0], max(data)/2),arrowprops=dict(arrowstyle="<|-|>,head_width=0.1",facecolor='k', linewidth=0.4, shrinkA=0, shrinkB=0) )
                 axes1[i//3][j].annotate('P\n', xy=(p_time,max(data)), ha='center', va='top',fontsize=6,rotation=90)
                 axes1[i//3][j].annotate('S\n', xy=(s_time,max(data)), ha='center', va='top',fontsize=6,rotation=90)
                 axes1[i//3][j].annotate('Coda\n', xy=(coda_time,max(data)), ha='center', va='top',fontsize=6,rotation = 90)
@@ -373,5 +374,5 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
     fig1.supylabel(r'Acceleration')
     fig1.supxlabel(r'Time')
     fig1.tight_layout(pad=1.25)
-    fig1.savefig(file_dir,dpi=600) 
+    fig1.savefig(file_dir_acc,dpi=600) 
         
