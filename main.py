@@ -26,6 +26,8 @@ t0 = event_origin.isoformat()                     #ISO format
 t0 = UTCDateTime(t0)                              # method to convert date into compatible trace fotmat
 
 
+fc = 24
+
 
 
 ################################################################################
@@ -53,41 +55,47 @@ for station in stations_name:
 
 ###############################################################################
 
-""" 
-RAW SPECTRUM 
-For each station, raw spectrum is obtained; processing includes only detrending
-"""
+# """ 
+# RAW SPECTRUM 
+# For each station, raw spectrum is obtained; processing includes only detrending
+# """
 
-utils.raw_spectrum_plots(main_dir,data_files_list,10,'linear',t0)
+# utils.raw_spectrum_plots(main_dir,data_files_list,10,'linear',t0)
 
-"""    NOISE SPECTRUM   (before P-wave arrival) """
+# """    NOISE SPECTRUM   (before P-wave arrival) """
 
-utils.noise_spectrum_plots(main_dir,data_files_list,10,'linear',
-                           stations_data,t0,0,0)
-
-
-"""    P-WAVE SPECTRUM    """
-
-utils.p_wave_spectrum_plots(main_dir,data_files_list,10,'linear',
-                            stations_data,t0)
+# utils.noise_spectrum_plots(main_dir,data_files_list,10,'linear',
+#                            stations_data,t0,0,0)
 
 
-"""    S-WAVE SPECTRUM  """
+# """    P-WAVE SPECTRUM    """
 
-utils.s_wave_spectrum_plots(main_dir,data_files_list,10,'linear',
-                            stations_data,t0)
-
-
-"""   CODA-WAVE SPECTRUM    """
-
-utils.coda_wave_spectrum_plots(main_dir,data_files_list,10,'linear',
-                               stations_data,t0)
-
-#inicio 3:42pm
+# utils.p_wave_spectrum_plots(main_dir,data_files_list,10,'linear',
+#                             stations_data,t0)
 
 
-""" Effective duration by Husid (1969) """
+# """    S-WAVE SPECTRUM  """
+
+# utils.s_wave_spectrum_plots(main_dir,data_files_list,10,'linear',
+#                             stations_data,t0)
 
 
-utils.intensity_plots(main_dir,data_files_list,stations_data,t0)
+# """   CODA-WAVE SPECTRUM    """
 
+# utils.coda_wave_spectrum_plots(main_dir,data_files_list,10,'linear',
+#                                stations_data,t0)
+
+# #inicio 3:42pm
+
+
+# """ Effective duration by Husid (1969) """
+
+
+# utils.intensity_plots(main_dir,data_files_list,stations_data,t0)
+
+"""  CODA-Q ANALYSIS"""
+utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,1.5,factor_e=3.5)
+utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,3,factor_e=3.5)
+utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,6,factor_e=3.5)
+utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,12,factor_e=3.5)
+utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,24,factor_e=3.5)
