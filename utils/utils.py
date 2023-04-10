@@ -293,20 +293,26 @@ def coda_wave_spectrum_plots(main_dir,files_set,xlim,scale,stations_data,t0,plot
 CODA-Q ANALYSIS
 
 """
-def coda_analysis_spectrum_plots(main_dir,files_set,stations_data,t0,fc,plot_type='Coda_Q_Analysis',dt_adjust = 0,factor_s = 2, factor_e = 4):
+def coda_analysis_spectrum_plots(main_dir,files_set,stations_data,t0,fc,plot_type='Coda_Q',dt_adjust = 0,factor_s = 2, factor_e = 4):
     plots_dir = os.path.join(main_dir,"plots")
     plot_dir = os.path.join(plots_dir,plot_type)
-    file_dir = os.path.join(plot_dir,plot_type +"_f_"+str(fc)+".jpeg")
+    file_dir = os.path.join(plot_dir,plot_type +"_f_"+str(fc)+"_"+"tc_end_"+str(factor_e)+"_.jpeg")
+    file_dir1 = os.path.join(plot_dir,plot_type + "_attenuation"+"_f_"+str(fc)+"_"+"tc_end_"+str(factor_e)+"_.jpeg")
     if not os.path.isdir(plot_dir):    
         os.mkdir(plot_dir)    
     
     def coda_analysis_spectrum_subplot(files_list,origin_time,dict_info,f,factor_start = 2,factor_end = 4):
         n = len(files_list)//3    
         fig,axes = plt.subplots(n,3,figsize=(12,16))
+        fig1,axes1 = plt.subplots(n,3,figsize=(12,16))
         for i in range(0,len(files_list),3):
             for j in range(3):
                 dt_s_wave = dict_info[files_list[i+j][3:7]]['S-arrival time'] - origin_time
                 trace = obs.read('data/'+files_list[i+j])
+                trace1 = obs.read('data/'+files_list[i+j])
+                trace1.trim(origin_time,origin_time+factor_end*dt_s_wave)
+                data1 = trace1[0]
+                t1 = data1.times()
                 trace.trim(origin_time+factor_start*dt_s_wave,origin_time+factor_end*dt_s_wave)  # s-wave windows lasts 2 times its arrival time
                 data = trace[0]
                 t = data.times()+factor_start*dt_s_wave
@@ -322,24 +328,37 @@ def coda_analysis_spectrum_plots(main_dir,files_set,stations_data,t0,fc,plot_typ
                 model = np.polyfit(t,ln_At,1)
                 m,b = model[0],model[1]
                 Q = -(np.pi*f)/m
+                A0 = np.exp(b)
+                At = A0*(t**(-1))*np.exp(-np.pi*f*t/Q)
                 predict = np.poly1d(model)
                 linear_fit = predict(t)
-                axes[i//3][j].plot(t,linear_fit,color='k',linewidth=0.8,label="$Qc$={}".format(str(round(Q,3))))
+                axes[i//3][j].plot(t,linear_fit,color='k',linewidth=0.8,label="$Q_{c}=$"+"{}".format(str(round(Q,2))))
                 axes[i//3][j].scatter(t,ln_At,color='b',s=0.15,linewidths=0.1,marker='+')
                 axes[i//3][j].legend(fontsize=5)
                 axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
                 axes[i//3][j].tick_params(axis='both',labelsize=6)
                 axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
-        return fig, axes
+                axes1[i//3][j].plot(t,At,color='k',linestyle='--',linewidth=0.5,label="$Q_{c}=$"+"{}".format(str(round(Q,2))))
+                axes1[i//3][j].plot(t1,data1,color='r',linewidth=0.1)
+                axes1[i//3][j].legend(fontsize=5)
+                axes1[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
+                axes1[i//3][j].tick_params(axis='both',labelsize=6)
+                axes1[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+        return fig, axes,fig1,axes1
     
     ### Plotting spectra per each subset ###
     
-    fig,axes = coda_analysis_spectrum_subplot(files_set,t0,stations_data,fc,factor_start=factor_s,factor_end = factor_e)                                    
+    fig,axes,fig1,axes1 = coda_analysis_spectrum_subplot(files_set,t0,stations_data,fc,factor_start=factor_s,factor_end = factor_e)                                    
     fig.suptitle('Event: igepn2023fkei Time: {} \n Linear Regression for Q factor'.format(t0))
     fig.supylabel(r'$log(A(t,f))+ log(t)$')
     fig.supxlabel(r't')
     fig.tight_layout(pad=1.25)
-    fig.savefig(file_dir,dpi=600) 
+    fig.savefig(file_dir,dpi=600)                      
+    fig1.suptitle('Event: igepn2023fkei Time: {} \n Model for attetuation (Aki and Chouet)'.format(t0))
+    fig1.supylabel(r'Acceleration')
+    fig1.supxlabel(r't')
+    fig1.tight_layout(pad=1.25)
+    fig1.savefig(file_dir1,dpi=600) 
 
 
 """ 
