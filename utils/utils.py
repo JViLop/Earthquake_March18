@@ -8,6 +8,7 @@ import os
 import shutil
 from scipy.integrate import trapezoid,simpson
 import matplotlib.pylab as plt
+from sklearn.linear_model import LinearRegression
 
 
 """ 
@@ -315,7 +316,8 @@ def coda_analysis_spectrum_plots(main_dir,files_set,stations_data,t0,fc,plot_typ
                 t1 = data1.times()
                 trace.trim(origin_time+factor_start*dt_s_wave,origin_time+factor_end*dt_s_wave)  # s-wave windows lasts 2 times its arrival time
                 data = trace[0]
-                t = data.times()+factor_start*dt_s_wave
+                time = data.times()+factor_start*dt_s_wave
+                t  = np.array(time).reshape((-1,1))
                 station_name  = data.stats.station
                 station_channel = data.stats.channel
                 df = data.stats.sampling_rate
@@ -324,23 +326,26 @@ def coda_analysis_spectrum_plots(main_dir,files_set,stations_data,t0,fc,plot_typ
                 band_pass_data = bandpass(detrended_data,fmin,fmax,df)
                 envelp = envelope(band_pass_data)
                 A = smooth(envelp,20)
-                ln_At = np.log(A*t)
-                model = np.polyfit(t,ln_At,1)
-                m,b = model[0],model[1]
+                ln_At = np.log(A*time)
+                # model = np.polyfit(t,ln_At,1)
+                model = LinearRegression().fit(t,ln_At)
+                r_sq = model.score(t,ln_At)
+                m,b = model.coef_[0],model.intercept_
                 Q = -(np.pi*f)/m
                 A0 = np.exp(b)
                 At = A0*(t**(-1))*np.exp(-np.pi*f*t/Q)
-                predict = np.poly1d(model)
-                linear_fit = predict(t)
-                axes[i//3][j].plot(t,linear_fit,color='k',linewidth=0.8,label="$Q_{c}=$"+"{}".format(str(round(Q,2))))
-                axes[i//3][j].scatter(t,ln_At,color='b',s=0.15,linewidths=0.1,marker='+')
+                # predict = np.poly1d(model)
+                # linear_fit = predict(t)
+                linear_fit = model.predict(t)
+                axes[i//3][j].plot(time,linear_fit,color='k',linewidth=0.8,label="$Q_{c}=$"+ "{}".format(str(round(Q,2)))+" "+" $R^{2}=$"+ "{}".format(str(round(r_sq,3))) )
+                axes[i//3][j].scatter(time,ln_At,color='b',s=0.15,linewidths=0.1,marker='+')
                 axes[i//3][j].legend(fontsize=5)
                 axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
                 axes[i//3][j].tick_params(axis='both',labelsize=6)
                 axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
                 axes1[i//3][j].plot(t,At,color='k',linestyle='--',linewidth=0.5,label="$Q_{c}=$"+"{}".format(str(round(Q,2))))
                 axes1[i//3][j].plot(t1,data1,color='r',linewidth=0.1)
-                axes1[i//3][j].legend(fontsize=5)
+                axes1[i//3][j].legend(fontsize=3)
                 axes1[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
                 axes1[i//3][j].tick_params(axis='both',labelsize=6)
                 axes1[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
