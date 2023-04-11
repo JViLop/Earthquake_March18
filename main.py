@@ -94,9 +94,9 @@ for station in stations_name:
 # utils.intensity_plots(main_dir,data_files_list,stations_data,t0)
 
 """  CODA-Q ANALYSIS"""
-utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,0.75,factor_e=3.5)
-utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,1.5,factor_e=3.5)
-utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,3,factor_e=3.5)
-utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,6,factor_e=3.5)
-utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,12,factor_e=3.5)
-utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,24,factor_e=3.5)
+utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,0.75,factor_e=6)
+utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,1.5,factor_e=6)
+utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,3,factor_e=6)
+utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,6,factor_e=6)
+utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,12,factor_e=6)
+utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,24,factor_e=6)

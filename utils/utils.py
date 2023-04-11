@@ -11,6 +11,30 @@ import matplotlib.pylab as plt
 from sklearn.linear_model import LinearRegression
 
 
+def moving_ave(A, N):
+    """
+    Alternative function for moving average for an array.
+    PARAMETERS:
+    ---------------------
+    A: 1-D array of data to be smoothed
+    N: integer, it defines the full!! window length to smooth
+    RETURNS:
+    ---------------------
+    B: 1-D array with smoothed data
+    """
+    # defines an array with N extra samples at either side
+    temp = np.zeros(len(A) + 2 * N)
+    # set the central portion of the array to A
+    temp[N:-N] = A
+    # leading samples: equal to first sample of actual array
+    temp[0:N] = temp[N]
+    # trailing samples: Equal to last sample of actual array
+    temp[-N:] = temp[-N - 1]
+    # convolve with a boxcar and normalize, and use only central portion of the result
+    # with length equal to the original array, discarding the added leading and trailing samples
+    B = np.convolve(temp, np.ones(N) / N, mode="same")[N:-N]
+    return B
+
 """ 
 
         RAW SPECTRUM 
@@ -297,15 +321,15 @@ CODA-Q ANALYSIS
 def coda_analysis_spectrum_plots(main_dir,files_set,stations_data,t0,fc,plot_type='Coda_Q',dt_adjust = 0,factor_s = 2, factor_e = 4):
     plots_dir = os.path.join(main_dir,"plots")
     plot_dir = os.path.join(plots_dir,plot_type)
-    file_dir = os.path.join(plot_dir,plot_type +"_f_"+str(fc)+"_"+"tc_end_"+str(factor_e)+"_.jpeg")
-    file_dir1 = os.path.join(plot_dir,plot_type + "_attenuation"+"_f_"+str(fc)+"_"+"tc_end_"+str(factor_e)+"_.jpeg")
+    file_dir = os.path.join(plot_dir,plot_type +"_f_"+str(fc)+"_"+"factor_dt_end_"+str(factor_e)+"_.jpeg")
+    # file_dir1 = os.path.join(plot_dir,plot_type + "_attenuation"+"_f_"+str(fc)+"_"+"tc_end_"+str(factor_e)+"_SMOOTH.jpeg")
     if not os.path.isdir(plot_dir):    
         os.mkdir(plot_dir)    
     
     def coda_analysis_spectrum_subplot(files_list,origin_time,dict_info,f,factor_start = 2,factor_end = 4):
         n = len(files_list)//3    
         fig,axes = plt.subplots(n,3,figsize=(12,16))
-        fig1,axes1 = plt.subplots(n,3,figsize=(12,16))
+        # fig1,axes1 = plt.subplots(n,3,figsize=(12,16))
         for i in range(0,len(files_list),3):
             for j in range(3):
                 dt_s_wave = dict_info[files_list[i+j][3:7]]['S-arrival time'] - origin_time
@@ -316,6 +340,8 @@ def coda_analysis_spectrum_plots(main_dir,files_set,stations_data,t0,fc,plot_typ
                 t1 = data1.times()
                 trace.trim(origin_time+factor_start*dt_s_wave,origin_time+factor_end*dt_s_wave)  # s-wave windows lasts 2 times its arrival time
                 data = trace[0]
+                lapse_time_window = factor_end*dt_s_wave -factor_start*dt_s_wave
+                factor_diff = factor_end-factor_start
                 time = data.times()+factor_start*dt_s_wave
                 t  = np.array(time).reshape((-1,1))
                 station_name  = data.stats.station
@@ -325,7 +351,8 @@ def coda_analysis_spectrum_plots(main_dir,files_set,stations_data,t0,fc,plot_typ
                 detrended_data = detrend(data,type='linear')
                 band_pass_data = bandpass(detrended_data,fmin,fmax,df)
                 envelp = envelope(band_pass_data)
-                A = smooth(envelp,20)
+                #A = smooth(envelp,int(5/0.01))
+                A = moving_ave(envelp,int(5/0.01)) ### Noisepy function
                 ln_At = np.log(A*time)
                 # model = np.polyfit(t,ln_At,1)
                 model = LinearRegression().fit(t,ln_At)
@@ -342,28 +369,29 @@ def coda_analysis_spectrum_plots(main_dir,files_set,stations_data,t0,fc,plot_typ
                 axes[i//3][j].legend(fontsize=5)
                 axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
                 axes[i//3][j].tick_params(axis='both',labelsize=6)
-                axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
-                axes1[i//3][j].plot(t,At,color='k',linestyle='--',linewidth=0.5,label="$Q_{c}=$"+"{}".format(str(round(Q,2))))
-                axes1[i//3][j].plot(t1,data1,color='r',linewidth=0.1)
-                axes1[i//3][j].legend(fontsize=3)
-                axes1[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
-                axes1[i//3][j].tick_params(axis='both',labelsize=6)
-                axes1[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
-        return fig, axes,fig1,axes1
+                axes[i//3][j].set_title(station_name + ' ' + station_channel + ' '+  '\n $\Delta t_{coda}=$'+'{}'.format(factor_diff)+'$\Delta t_{S_{arrival}}$='+'{}'.format(round(lapse_time_window,1))+'s',fontdict={'fontsize':4.5,'color':'blue'})
+                # axes1[i//3][j].plot(t,At,color='k',linestyle='--',linewidth=0.5,label="$Q_{c}=$"+"{}".format(str(round(Q,2))))
+                # axes1[i//3][j].plot(t1,data1,color='r',linewidth=0.1)
+                # axes1[i//3][j].legend(fontsize=3)
+                # axes1[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
+                # axes1[i//3][j].tick_params(axis='both',labelsize=6)
+                # axes1[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+
+        return fig, axes #fig1,axes1 
     
     ### Plotting spectra per each subset ###
     
-    fig,axes,fig1,axes1 = coda_analysis_spectrum_subplot(files_set,t0,stations_data,fc,factor_start=factor_s,factor_end = factor_e)                                    
+    fig,axes = coda_analysis_spectrum_subplot(files_set,t0,stations_data,fc,factor_start=factor_s,factor_end = factor_e)                                    
     fig.suptitle('Event: igepn2023fkei Time: {} \n Linear Regression for Q factor'.format(t0))
     fig.supylabel(r'$log(A(t,f))+ log(t)$')
     fig.supxlabel(r't')
     fig.tight_layout(pad=1.25)
     fig.savefig(file_dir,dpi=600)                      
-    fig1.suptitle('Event: igepn2023fkei Time: {} \n Model for attetuation (Aki and Chouet)'.format(t0))
-    fig1.supylabel(r'Acceleration')
-    fig1.supxlabel(r't')
-    fig1.tight_layout(pad=1.25)
-    fig1.savefig(file_dir1,dpi=600) 
+    # fig1.suptitle('Event: igepn2023fkei Time: {} \n Model for attetuation (Aki and Chouet)'.format(t0))
+    # fig1.supylabel(r'Acceleration')
+    # fig1.supxlabel(r't')
+    # fig1.tight_layout(pad=1.25)
+    # fig1.savefig(file_dir1,dpi=600) 
 
 
 """ 
