@@ -9,7 +9,7 @@ import shutil
 from scipy.integrate import trapezoid,simpson
 import matplotlib.pylab as plt
 from sklearn.linear_model import LinearRegression
-
+import pandas as pd
 
 def moving_ave(A, N):
     """
@@ -319,17 +319,22 @@ CODA-Q ANALYSIS
 
 """
 def coda_analysis_spectrum_plots(main_dir,files_set,stations_data,t0,fc,plot_type='Coda_Q',dt_adjust = 0,factor_s = 2, factor_e = 4):
-    plots_dir = os.path.join(main_dir,"plots")
+    plots_dir = os.path.join(main_dir,"graphs")
     plot_dir = os.path.join(plots_dir,plot_type)
+    csv_dir = os.path.join(main_dir,'csv_files')
+    csv_dir = os.path.join(csv_dir,plot_type)
+    csv_file_dir = os.path.join(csv_dir,plot_type +"_f_"+str(fc)+"_"+"factor_dt_end_"+str(factor_e)+"_.csv")
     file_dir = os.path.join(plot_dir,plot_type +"_f_"+str(fc)+"_"+"factor_dt_end_"+str(factor_e)+"_.jpeg")
     # file_dir1 = os.path.join(plot_dir,plot_type + "_attenuation"+"_f_"+str(fc)+"_"+"tc_end_"+str(factor_e)+"_SMOOTH.jpeg")
-    if not os.path.isdir(plot_dir):    
-        os.mkdir(plot_dir)    
+    if not os.path.isdir(plot_dir) and not os.path.isdir(csv_dir) :    
+        os.makedirs(plot_dir)    
+        os.makedirs(csv_dir)
     
     def coda_analysis_spectrum_subplot(files_list,origin_time,dict_info,f,factor_start = 2,factor_end = 4):
         n = len(files_list)//3    
         fig,axes = plt.subplots(n,3,figsize=(12,16))
         # fig1,axes1 = plt.subplots(n,3,figsize=(12,16))
+        dataQ = {'station':[],'E':[],'N':[],'Z':[]}
         for i in range(0,len(files_list),3):
             for j in range(3):
                 dt_s_wave = dict_info[files_list[i+j][3:7]]['S-arrival time'] - origin_time
@@ -361,6 +366,10 @@ def coda_analysis_spectrum_plots(main_dir,files_set,stations_data,t0,fc,plot_typ
                 Q = -(np.pi*f)/m
                 A0 = np.exp(b)
                 At = A0*(t**(-1))*np.exp(-np.pi*f*t/Q)
+                if j==0:
+                    dataQ['station'].append(station_name)
+                dataQ[station_channel[-1]].append(Q)
+                
                 # predict = np.poly1d(model)
                 # linear_fit = predict(t)
                 linear_fit = model.predict(t)
@@ -377,16 +386,21 @@ def coda_analysis_spectrum_plots(main_dir,files_set,stations_data,t0,fc,plot_typ
                 # axes1[i//3][j].tick_params(axis='both',labelsize=6)
                 # axes1[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
 
-        return fig, axes #fig1,axes1 
+        # dfQ = pd.DataFrame(dataQ)
+        return fig, axes,dataQ #fig1,axes1 
     
     ### Plotting spectra per each subset ###
     
-    fig,axes = coda_analysis_spectrum_subplot(files_set,t0,stations_data,fc,factor_start=factor_s,factor_end = factor_e)                                    
+    fig,axes,dataQ= coda_analysis_spectrum_subplot(files_set,t0,stations_data,fc,factor_start=factor_s,factor_end = factor_e)                                    
     fig.suptitle('Event: igepn2023fkei Time: {} \n Linear Regression for Q factor'.format(t0))
     fig.supylabel(r'$log(A(t,f))+ log(t)$')
     fig.supxlabel(r't')
     fig.tight_layout(pad=1.25)
-    fig.savefig(file_dir,dpi=600)                      
+    fig.savefig(file_dir,dpi=600)   
+    df=pd.DataFrame(dataQ)
+    df1 = df.set_index('station')
+    df1.to_csv(csv_file_dir)
+    # dfQ.to_csv(csv_file_dir)                   
     # fig1.suptitle('Event: igepn2023fkei Time: {} \n Model for attetuation (Aki and Chouet)'.format(t0))
     # fig1.supylabel(r'Acceleration')
     # fig1.supxlabel(r't')

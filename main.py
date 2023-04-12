@@ -1,6 +1,7 @@
 
 import pandas as pd
 from obspy.core.utcdatetime import UTCDateTime
+import matplotlib.pylab as plt
 from datetime import datetime
 from utils import utils
 import os
@@ -8,6 +9,7 @@ import os
 
 main_dir = os.path.abspath(os.getcwd()) 
 data_folder_dir =  os.path.join(main_dir,"data")
+plots_folder_dir =  os.path.join(main_dir,"plots")
 utils_dir = os.path.join(main_dir,"utils")
 
 
@@ -94,9 +96,39 @@ for station in stations_name:
 # utils.intensity_plots(main_dir,data_files_list,stations_data,t0)
 
 """  CODA-Q ANALYSIS"""
-utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,0.75,factor_e=6)
-utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,1.5,factor_e=6)
-utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,3,factor_e=6)
-utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,6,factor_e=6)
-utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,12,factor_e=6)
-utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,24,factor_e=6)
+
+""" Linear Regression"""
+
+# utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,0.75,factor_e=6)
+# utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,1.5,factor_e=6)
+# utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,3,factor_e=6)
+# utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,6,factor_e=6)
+# utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,12,factor_e=6)
+# utils.coda_analysis_spectrum_plots(main_dir,data_files_list,stations_data,t0,24,factor_e=6)
+
+
+csv_folder_dir =os.path.join(main_dir,"csv_files")
+csv_folder_dir =os.path.join(csv_folder_dir,"Coda_Q")
+csv_files_list = os.listdir(csv_folder_dir)
+Qmodel_dir = os.path.join(plots_folder_dir,"Coda_Q")
+
+freqs = [0.75*2**(i) for i in range(6)]
+
+fig,ax = plt.subplots()
+Q = []
+for i in range(6):
+    df = pd.read_csv(os.path.join(csv_folder_dir,csv_files_list[i]))                         
+    Qc=df.loc[7]['Z']
+    Q.append(Qc)                              
+    
+ax.scatter(freqs,Q)
+
+
+
+
+
+
+
+
+
+
