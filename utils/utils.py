@@ -480,6 +480,7 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
                 p_time = dict_info[files_list[i+j][3:7]]['P-arrival time']-origin_time
                 s_time = dict_info[files_list[i+j][3:7]]['S-arrival time']-origin_time
                 coda_time = 2*s_time
+                
                 axes1[i//3][j].plot(times,data,'r-',linewidth=0.4)
                 axes1[i//3][j].set_xlim(0,130)
                 axes1[i//3][j].axvline(p_time,color='b',linewidth=0.6)

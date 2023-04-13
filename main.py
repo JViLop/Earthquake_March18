@@ -116,22 +116,25 @@ freqs = [0.75*2**(i) for i in range(6)]
 
 
 
+fig,axes = plt.subplots(15,3,figsize=(12,16))
+for j,station in enumerate(stations_name):
+    for k,comp in enumerate(['E','N','Z']):
+        Q=[]
+        for i in range(6):
+            path = os.path.join(csv_folder_dir,csv_files_list[i])
+            df = pd.read_csv(os.path.join(csv_folder_dir,csv_files_list[i]),index_col=0)                         
+            Qc=df.loc[station][comp]
+            Q.append(Qc)   
+        axes[j][k].plot(freqs,Q,'-o',linewidth=0.4,markersize=1.5)
+        axes[j][k].annotate(station,xy=(freqs[1],Q[1]),xytext=(freqs[1],Q[1]),ha='center',va='top',fontsize=1)   
+        axes[j][k].set_title(station + ' ' + comp,fontdict={'fontsize':8,'color':'blue'})
 
-for station in stations_name:
-    Q=[]
-    for i in range(6):
-        path = os.path.join(csv_folder_dir,csv_files_list[i])
-        df = pd.read_csv(os.path.join(csv_folder_dir,csv_files_list[i]),index_col=0)                         
-        Qc=df.loc[station]['N']
-        Q.append(Qc)                                  
-    plt.plot(freqs,Q,'-o',linewidth=1)
-    plt.xlim(0.5,4)
-    plt.ylim(100,.15e4)
-    plt.annotate(station,xy=(freqs[1],Q[1]),fontsize=2)   
 
-plt.savefig(Qmodel_dir+'/Qmodel.jpg',dpi=800)
-plt.show()
-
+fig.suptitle('Event: igepn2023fkei Time: {} \n  Q factor as functio of f'.format(t0))
+fig.supylabel(r'$Q(f)$')
+fig.supxlabel(r'f')
+fig.tight_layout(pad=1.25)
+fig.savefig(Qmodel_dir+'/Qmodel.jpg',dpi=600)
 
 
 
