@@ -443,8 +443,9 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
       
     def intensity_subplot(files_list,origin_time,dict_info):
         n = len(files_list)//3    
-        fig,axes = plt.subplots(n,3,figsize=(12,16))
-        fig1,axes1 = plt.subplots(n,3,figsize=(12,16))
+        fig,axes = plt.subplots(n,3,figsize=(14,18))
+        
+        # fig1,axes1 = plt.subplots(n,3,figsize=(12,16))
         for i in range(0,len(files_list),3):
             for j in range(3):
                 trace = obs.read('data/'+files_list[i+j])
@@ -463,54 +464,57 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
                 idx_95 = np.argwhere(np.diff(np.sign(np.array(I_simps)-end_percent))).flatten()
                 x_eff_5 = (time[idx_5][0],np.array(I_simps)[idx_5][0])
                 x_eff_95 = (time[idx_95][0],np.array(I_simps)[idx_95][0])
-                
-                ## Plotting Arias intensity ##   
-                
-                axes[i//3][j].plot(time,I_simps,'b-',linewidth=0.5)
-                axes[i//3][j].plot(x_eff_5[0],x_eff_5[1],'ro',x_eff_95[0],x_eff_95[1],'ro',markersize=3)
-                axes[i//3][j].set_xlim(0,120)
-                axes[i//3][j].set_xticks(np.arange(0,120,20))
-                axes[i//3][j].axhline(0.05,color='r',linewidth=0.4)
-                axes[i//3][j].axhline(0.95,color='r',linewidth=0.4)
-                axes[i//3][j].axvline(time[idx_5][0],color='r',linewidth=0.4)
-                axes[i//3][j].axvline(time[idx_95][0],color='r',linewidth=0.4)
-                axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
-               
                 ## Plotting Ground-Motion
                 p_time = dict_info[files_list[i+j][3:7]]['P-arrival time']-origin_time
                 s_time = dict_info[files_list[i+j][3:7]]['S-arrival time']-origin_time
                 coda_time = 2*s_time
+             
+                ## Plotting Arias intensity ##   
+                axes1 = axes[i//3][j].twinx()
+                axes[i//3][j].plot(times,data,'r-',linewidth=0.25)
+                axes[i//3][j].set_xlim(0,130)
+                axes[i//3][j].set_ylabel('a'+r'$( \frac{cm}{s^{2}} )$')
+                axes[i//3][j].set_xlabel('t $(s)$')
+                axes[i//3][j].axvline(p_time,color='c',linewidth=0.4)
+                axes[i//3][j].axvline(s_time,color='c',linewidth=0.4)
+                axes[i//3][j].axvline(coda_time,color='c',linewidth=0.4)
+                axes[i//3][j].annotate(r'$D_{5-95}$', xy=(time[idx_5][0]/2+time[idx_95][0]/2, max(data)/2.4), ha='center', va='top',fontsize=6)
+                axes[i//3][j].annotate( "", xy=(time[idx_5][0],max(data)/2), xytext=(time[idx_95][0], max(data)/2),arrowprops=dict(arrowstyle="<|-|>,head_width=0.1",facecolor='k', linewidth=0.4, shrinkA=0, shrinkB=0) )
+                axes[i//3][j].annotate('P\n', xy=(p_time,max(data)+0.08*max(data)), ha='center', va='top',fontsize=6,rotation=90)
+                axes[i//3][j].annotate('S\n', xy=(s_time,max(data)+0.08*max(data)), ha='center', va='top',fontsize=6,rotation=90)
+                axes[i//3][j].annotate('Coda\n', xy=(coda_time,max(data)+0.08*max(data)), ha='center', va='top',fontsize=6,rotation = 90)
+                axes[i//3][j].axvline(time[idx_5][0],color='b',linestyle='--',linewidth=0.5)
+                axes[i//3][j].axvline(time[idx_95][0],color='b',linestyle='--',linewidth=0.5)
+                axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
                 
-                axes1[i//3][j].plot(times,data,'r-',linewidth=0.4)
-                axes1[i//3][j].set_xlim(0,130)
-                axes1[i//3][j].axvline(p_time,color='b',linewidth=0.6)
-                axes1[i//3][j].axvline(s_time,color='b',linewidth=0.6)
-                axes1[i//3][j].axvline(coda_time,color='b',linewidth=0.6)
-                axes1[i//3][j].annotate('Effec.\nDuration', xy=(time[idx_5][0]/2+time[idx_95][0]/2, max(data)/2.4), ha='center', va='top',fontsize=5)
-                axes1[i//3][j].annotate( "", xy=(time[idx_5][0],max(data)/2), xytext=(time[idx_95][0], max(data)/2),arrowprops=dict(arrowstyle="<|-|>,head_width=0.1",facecolor='k', linewidth=0.4, shrinkA=0, shrinkB=0) )
-                axes1[i//3][j].annotate('P\n', xy=(p_time,max(data)), ha='center', va='top',fontsize=6,rotation=90)
-                axes1[i//3][j].annotate('S\n', xy=(s_time,max(data)), ha='center', va='top',fontsize=6,rotation=90)
-                axes1[i//3][j].annotate('Coda\n', xy=(coda_time,max(data)), ha='center', va='top',fontsize=6,rotation = 90)
-                axes1[i//3][j].axvline(time[idx_5][0],color='k',linestyle='--',linewidth=0.6)
-                axes1[i//3][j].axvline(time[idx_95][0],color='k',linestyle='--',linewidth=0.6)
-                axes1[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+                
+                axes1.set_ylabel('norm. $I_{A}$')
+                axes1.plot(time,I_simps,'k-',linewidth=0.85)
+                axes1.plot(x_eff_5[0],x_eff_5[1],'yo',x_eff_95[0],x_eff_95[1],'yo',markersize=3)
+                axes1.set_xlim(0,120)
+                axes1.set_xticks(np.arange(0,120,20))
+                axes1.axhline(0.05,color='g',linewidth=0.4)
+                axes1.axhline(0.95,color='g',linewidth=0.4)
+                axes1.set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+               
+                
         
         
-        return fig,axes,fig1,axes1
+        return fig,axes,#fig1,axes1
     
     ### Plotting spectra per each subset ###
     
-    fig,axes,fig1,axes1 = intensity_subplot(files_set,t0,stations_data)                                   
+    fig,axes= intensity_subplot(files_set,t0,stations_data)                                   
     fig.suptitle('Event: igepn2023fkei Time: {} \n Arias Intensity from event origin'.format(t0))
-    fig.supylabel(r'Intensity')
-    fig.supxlabel(r'Time')
-    fig.tight_layout(pad=1.25)
-    fig.savefig(file_dir,dpi=600)
-    fig1.suptitle('Event: igepn2023fkei Time: {} \n Acceleration from event origin'.format(t0))
-    fig1.supylabel(r'Acceleration')
-    fig1.supxlabel(r'Time')
-    fig1.tight_layout(pad=1.25)
-    fig1.savefig(file_dir_acc,dpi=600) 
+    # fig.supylabel(r'Intensity')
+    # fig.supxlabel(r'Time')
+    fig.tight_layout(pad=1.75)
+    fig.savefig(file_dir,dpi=800)
+    # fig1.suptitle('Event: igepn2023fkei Time: {} \n Acceleration from event origin'.format(t0))
+    # fig1.supylabel(r'Acceleration')
+    # fig1.supxlabel(r'Time')
+    # fig1.tight_layout(pad=1.25)
+    # fig1.savefig(file_dir_acc,dpi=600) 
         
     
     
