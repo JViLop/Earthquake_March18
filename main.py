@@ -114,14 +114,24 @@ Qmodel_dir = os.path.join(plots_folder_dir,"Coda_Q")
 
 freqs = [0.75*2**(i) for i in range(6)]
 
-fig,ax = plt.subplots()
-Q = []
-for i in range(6):
-    df = pd.read_csv(os.path.join(csv_folder_dir,csv_files_list[i]))                         
-    Qc=df.loc[7]['Z']
-    Q.append(Qc)                              
-    
-ax.scatter(freqs,Q)
+
+
+
+for station in stations_name:
+    Q=[]
+    for i in range(6):
+        path = os.path.join(csv_folder_dir,csv_files_list[i])
+        df = pd.read_csv(os.path.join(csv_folder_dir,csv_files_list[i]),index_col=0)                         
+        Qc=df.loc[station]['N']
+        Q.append(Qc)                                  
+    plt.plot(freqs,Q,'-o',linewidth=1)
+    plt.xlim(0.5,4)
+    plt.ylim(100,.15e4)
+    plt.annotate(station,xy=(freqs[1],Q[1]),fontsize=2)   
+
+plt.savefig(Qmodel_dir+'/Qmodel.jpg',dpi=800)
+plt.show()
+
 
 
 

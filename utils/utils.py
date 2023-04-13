@@ -323,8 +323,22 @@ def coda_analysis_spectrum_plots(main_dir,files_set,stations_data,t0,fc,plot_typ
     plot_dir = os.path.join(plots_dir,plot_type)
     csv_dir = os.path.join(main_dir,'csv_files')
     csv_dir = os.path.join(csv_dir,plot_type)
-    csv_file_dir = os.path.join(csv_dir,plot_type +"_f_"+str(fc)+"_"+"factor_dt_end_"+str(factor_e)+"_.csv")
-    file_dir = os.path.join(plot_dir,plot_type +"_f_"+str(fc)+"_"+"factor_dt_end_"+str(factor_e)+"_.jpeg")
+    
+    if fc==0.75:
+        a = 1
+    elif fc==1.5:
+        a = 2 
+    elif fc==3:
+        a = 3
+    elif fc==6:
+        a = 4
+    elif fc==12:
+        a = 5
+    else:
+        a = 6
+        
+    csv_file_dir = os.path.join(csv_dir,str(a)+'_'+plot_type +"_f_"+str(fc)+"_"+"factor_dt_end_"+str(factor_e)+"_.csv")
+    file_dir = os.path.join(plot_dir,str(a)+ '_'+plot_type +"_f_"+str(fc)+"_"+"factor_dt_end_"+str(factor_e)+"_.jpeg")
     # file_dir1 = os.path.join(plot_dir,plot_type + "_attenuation"+"_f_"+str(fc)+"_"+"tc_end_"+str(factor_e)+"_SMOOTH.jpeg")
     if not os.path.isdir(plot_dir) and not os.path.isdir(csv_dir) :    
         os.makedirs(plot_dir)    
@@ -397,10 +411,8 @@ def coda_analysis_spectrum_plots(main_dir,files_set,stations_data,t0,fc,plot_typ
     fig.supxlabel(r't')
     fig.tight_layout(pad=1.25)
     fig.savefig(file_dir,dpi=600)   
-    df=pd.DataFrame(dataQ)
-    df1 = df.set_index('station')
-    df1.to_csv(csv_file_dir)
-    # dfQ.to_csv(csv_file_dir)                   
+    df=pd.DataFrame(dataQ,index=dataQ['station'])
+    df.to_csv(csv_file_dir)                   
     # fig1.suptitle('Event: igepn2023fkei Time: {} \n Model for attetuation (Aki and Chouet)'.format(t0))
     # fig1.supylabel(r'Acceleration')
     # fig1.supxlabel(r't')
