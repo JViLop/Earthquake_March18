@@ -425,14 +425,14 @@ def coda_analysis_spectrum_plots(main_dir,files_set,stations_data,t0,fc,plot_typ
 EFFECTIVE DURATION in terms of INTENSITY
 
 """
-
+g = 980.67
 def intensity_trapz(y,x,i):
     return trapezoid(y[:i],x[:i])/trapezoid(y,x)
 
 def intensity_simps(y,x,i):
     return simpson(y[:i],x[:i])/simpson(y,x)   
 
-def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensity'):
+def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensity_acceleration'):
     plots_dir = os.path.join(main_dir,"plots")
     plot_dir = os.path.join(plots_dir,plot_type)
     file_dir= os.path.join(plot_dir,plot_type + ".jpeg")
@@ -443,20 +443,22 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
       
     def intensity_subplot(files_list,origin_time,dict_info):
         n = len(files_list)//3    
-        fig,axes = plt.subplots(n,3,figsize=(14,18))
+        fig,axes = plt.subplots(n,figsize=(12,15))
         
         # fig1,axes1 = plt.subplots(n,3,figsize=(12,16))
         for i in range(0,len(files_list),3):
-            for j in range(3):
-                trace = obs.read('data/'+files_list[i+j])
+            for j in [2]:
+                trace = obs.read('data_ElOro/'+files_list[i+j])
                 ending_time = trace[0].stats.endtime
                 trace.trim(origin_time,ending_time)  # trace trimmed from event start to ending time
+                tr = obs.read('data_ElOro/'+files_list[i+j])
                 data = trace[0]
                 detrended_data = detrend(data,type='linear')
                 times = data.times()
                 station_name  = data.stats.station
                 station_channel = data.stats.channel
                 I_simps = [intensity_simps(np.array(detrended_data)**2,times,i) for i in range(1,len(times))]   
+                AI = (np.pi/(2*g))*(simpson(np.array(detrended_data)**2,times))
                 time = times[1:]
                 init_percent = 0.05*np.ones(len(I_simps)) 
                 end_percent = 0.95*np.ones(len(I_simps))
@@ -465,37 +467,47 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
                 x_eff_5 = (time[idx_5][0],np.array(I_simps)[idx_5][0])
                 x_eff_95 = (time[idx_95][0],np.array(I_simps)[idx_95][0])
                 ## Plotting Ground-Motion
-                p_time = dict_info[files_list[i+j][3:7]]['P-arrival time']-origin_time
-                s_time = dict_info[files_list[i+j][3:7]]['S-arrival time']-origin_time
+                p_time = dict_info[files_list[i+j][4:8]]['P-arrival time']-origin_time
+                s_time = dict_info[files_list[i+j][4:8]]['S-arrival time']-origin_time
                 coda_time = 2*s_time
-             
+                timeMaxPGA = dict_info[files_list[i+j][4:8]]['TimeOfmaxAccZ']
+                dtMaxPGA =   timeMaxPGA - origin_time
+                maxPGA = tr.trim(timeMaxPGA,timeMaxPGA)[0][0]
+                effD =time[idx_95][0] - time[idx_5][0]
+                print(maxPGA,dtMaxPGA,effD)
+                hyp_dist = dict_info[files_list[i+j][4:8]]['hypocentralDist']
                 ## Plotting Arias intensity ##   
-                axes1 = axes[i//3][j].twinx()
-                axes[i//3][j].plot(times,data,'r-',linewidth=0.25)
-                axes[i//3][j].set_xlim(0,130)
-                axes[i//3][j].set_ylabel('a'+r'$( \frac{cm}{s^{2}} )$')
-                axes[i//3][j].set_xlabel('t $(s)$')
-                axes[i//3][j].axvline(p_time,color='c',linewidth=0.4)
-                axes[i//3][j].axvline(s_time,color='c',linewidth=0.4)
-                axes[i//3][j].axvline(coda_time,color='c',linewidth=0.4)
-                axes[i//3][j].annotate(r'$D_{5-95}$', xy=(time[idx_5][0]/2+time[idx_95][0]/2, max(data)/2.4), ha='center', va='top',fontsize=6)
-                axes[i//3][j].annotate( "", xy=(time[idx_5][0],max(data)/2), xytext=(time[idx_95][0], max(data)/2),arrowprops=dict(arrowstyle="<|-|>,head_width=0.1",facecolor='k', linewidth=0.4, shrinkA=0, shrinkB=0) )
-                axes[i//3][j].annotate('P\n', xy=(p_time,max(data)+0.08*max(data)), ha='center', va='top',fontsize=6,rotation=90)
-                axes[i//3][j].annotate('S\n', xy=(s_time,max(data)+0.08*max(data)), ha='center', va='top',fontsize=6,rotation=90)
-                axes[i//3][j].annotate('Coda\n', xy=(coda_time,max(data)+0.08*max(data)), ha='center', va='top',fontsize=6,rotation = 90)
-                axes[i//3][j].axvline(time[idx_5][0],color='b',linestyle='--',linewidth=0.5)
-                axes[i//3][j].axvline(time[idx_95][0],color='b',linestyle='--',linewidth=0.5)
-                axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
-                
-                
-                axes1.set_ylabel('norm. $I_{A}$')
-                axes1.plot(time,I_simps,'k-',linewidth=0.85)
-                axes1.plot(x_eff_5[0],x_eff_5[1],'yo',x_eff_95[0],x_eff_95[1],'yo',markersize=3)
-                axes1.set_xlim(0,120)
-                axes1.set_xticks(np.arange(0,120,20))
-                axes1.axhline(0.05,color='g',linewidth=0.4)
-                axes1.axhline(0.95,color='g',linewidth=0.4)
-                axes1.set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
+                axes1 = axes[i//3].twinx()
+                axes[i//3].plot(times,data,'r-',linewidth=0.7)
+                axes[i//3].plot(dtMaxPGA,maxPGA, color='green',marker='*',markersize=8)
+                axes[i//3].tick_params(axis='both', labelsize=11)
+                axes[i//3].set_xlim(0,100)
+                axes[i//3].set_ylabel('Aceleración '+'[cm/'+r'$s^{2}$'+']',fontsize=10)
+                axes[i//3].set_xlabel('Tiempo [s]',fontsize=10)
+                axes[i//3].axvline(p_time,color='c',linewidth=0.7)
+                axes[i//3].axvline(s_time,color='c',linewidth=0.7)
+                axes[i//3].axvline(coda_time,color='c',linewidth=0.7)
+                axes[i//3].annotate(r'$I_{A} =$'+'{:.3f}'.format(AI/100) +' m/s', xy=(0.85*100, 0.92*max(data)), ha='center', va='top',fontsize=12)
+                axes[i//3].annotate(r'$D_{5-95} =$'+'{:.2f}'.format(effD) +' s', xy=(0.85*100, 0.75*max(data)), ha='center', va='top',fontsize=12)
+                axes[i//3].annotate(r'$∣PGA∣ =$'+'{:.2f}'.format(abs(maxPGA)) +' cm/'+r'$s^{2}$', xy=(0.85*100, 0.58*max(data)), ha='center', va='top',fontsize=12)
+                axes[i//3].annotate(r'$D_{5-95}$', xy=(0.80*time[idx_95][0], max(data)/2.4), ha='center', va='top',fontsize=10)
+                axes[i//3].annotate( "", xy=(time[idx_5][0],max(data)/2), xytext=(time[idx_95][0], max(data)/2),arrowprops=dict(arrowstyle="<|-|>,head_width=0.1",facecolor='k', linewidth=0.6, shrinkA=0, shrinkB=0) )
+                axes[i//3].annotate('P\n', xy=(p_time,max(data)+0.08*max(data)), ha='center', va='top',fontsize=8,rotation=90)
+                axes[i//3].annotate('S\n', xy=(s_time,max(data)+0.08*max(data)), ha='center', va='top',fontsize=8,rotation=90)
+                axes[i//3].annotate('Coda\n', xy=(coda_time,max(data)+0.08*max(data)), ha='center', va='top',fontsize=8,rotation = 90)
+                axes[i//3].axvline(time[idx_5][0],color='b',linestyle='--',linewidth=0.7)
+                axes[i//3].axvline(time[idx_95][0],color='b',linestyle='--',linewidth=0.7)
+                axes[i//3].set_title(station_name + ' ' + station_channel +'   ' + 'Distancia Hipocentral: '+str(hyp_dist)+ ' km',fontdict={'fontsize': 12, 'fontweight':'bold','color':'blue'})
+               
+                axes1.set_ylabel('$I_{A}(t)$ Normalizada' ,fontsize=10)
+                axes1.plot(time,I_simps,color='tab:orange',linewidth=1.2)
+                axes1.plot(x_eff_5[0],x_eff_5[1],'yo',x_eff_95[0],x_eff_95[1],'yo',markersize=5)
+                axes1.set_xlim(0,100)
+                axes1.tick_params(axis='both', labelsize=11)
+                axes1.set_xticks(np.arange(0,101,20))
+                # axes1.axhline(0.05,color='g',linewidth=0.4)
+                # axes1.axhline(0.95,color='g',linewidth=0.4)
+                #axes1.set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 8,'color':'blue'})
                
                 
         
@@ -505,11 +517,11 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
     ### Plotting spectra per each subset ###
     
     fig,axes= intensity_subplot(files_set,t0,stations_data)                                   
-    fig.suptitle('Event: igepn2023fkei Time: {} \n Arias Intensity from event origin'.format(t0))
+    fig.suptitle('ID Evento: igepn2023fkei Tiempo Origen(UTC): {}'.format(t0)+'\n Aceleraciones Componente Vertical')
     # fig.supylabel(r'Intensity')
     # fig.supxlabel(r'Time')
     fig.tight_layout(pad=1.75)
-    fig.savefig(file_dir,dpi=800)
+    fig.savefig(file_dir,dpi=700)
     # fig1.suptitle('Event: igepn2023fkei Time: {} \n Acceleration from event origin'.format(t0))
     # fig1.supylabel(r'Acceleration')
     # fig1.supxlabel(r'Time')
