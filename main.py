@@ -5,9 +5,68 @@ import matplotlib.pylab as plt
 import numpy as np
 from datetime import datetime
 from utils import utils
+import re
 import os
 
 
+
+
+### Setting up general information ###
+
+
+path_event_text_file = "D:/Proyectos/Earthquake_20230318/Earthquake_March18/igepn2023fkei.txt"
+
+def line_index(path,string):
+    with open(path, 'r') as fp:
+        for l_no, line in enumerate(fp):
+            # search string
+            if string in line:
+                c =l_no
+                break
+                # don't look for next lines
+    return c
+    
+def string_finder(path,string):
+    with open(path, 'r') as fp:
+        for l_no, line in enumerate(fp):
+            # search string
+            if string in line: 
+                c = line
+                break
+                # don't look for next lines
+    return c
+        
+event_id = string_finder(path_event_text_file,'Public ID')
+event_id_regex = re.compile(r'(\w{5}\d{4}\w{4})')
+event_id = re.findall(event_id_regex,event_id)[0]
+
+date = string_finder(path_event_text_file,'Date') 
+date_regex = re.compile(r'(\d{4}-\d{2}-\d{2})')
+date = re.findall(date_regex,date)[0]
+
+time = string_finder(path_event_text_file,'Time') 
+time_regex = re.compile(r'(\d{2}:\d{2}:\d*\.?\d*)')
+time = re.findall(time_regex,time)[0]
+   
+latitude = string_finder(path_event_text_file,'Latitude') 
+latitude_regex = re.compile(r'[-+]?(?:\d*\.\d+|\d+)')
+latitude = re.findall(latitude_regex,latitude)[0]
+   
+longitude = string_finder(path_event_text_file,'Longitude') 
+longitude_regex = re.compile(r'[-+]?(?:\d*\.\d+|\d+)')
+longitude = re.findall(longitude_regex,longitude)[0]
+
+
+depth = string_finder(path_event_text_file,'Depth') 
+depth_regex = re.compile(r'[-+]?(?:\d*\.\d+|\d+)')
+depth = re.findall(depth_regex,depth)[0]
+
+
+
+lineStationPhase = line_index(path_event_text_file,'Phase arrivals:')  
+lineStationMagn = line_index(path_event_text_file,'Station magnitudes:')
+
+       
 main_dir = os.path.abspath(os.getcwd()) 
 data_folder_dir =  os.path.join(main_dir,"data")
 plots_folder_dir =  os.path.join(main_dir,"plots")
@@ -61,6 +120,8 @@ rows1 = rows1.set_index('stationCHN')
 rows1 = rows1.loc[rows1['CHN'].isin(['HNE','HNN','HNZ','BLE','BLN','BLZ'])][["station","CHN","MaxAcc", "TimeOfMaxAcc", "DIST"]]
 rows1['CHN'] = rows1['CHN'].str[-1:]
 rows1 = rows1.set_index(rows1['station']  + rows1['CHN'])  
+
+
 
 for station in stations_name:
         stations_data[station]= dict()
@@ -119,7 +180,7 @@ for station in stations_name:
 """ Effective duration by Husid (1969) """
 
 
-utils.intensity_plots(main_dir,data_el_oro_files_list,stations_data,t0)
+# utils.intensity_plots(main_dir,data_el_oro_files_list,stations_data,t0)
 
 
 """  CODA-Q ANALYSIS"""

@@ -538,34 +538,39 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
     
 
     
-class Earthquake_analysis():
+# class Earthquake_analysis():
     
-    def __init__(self,data_folder_path,wave_picking_file,stations_file,t_origin,magnitude,depth):
-        self.t0  = t_origin
-        self.wave_picking_csv =
-        self.magnitude = magnitude
-        self.depth = depth 
-        self.files = os.listdir(data_folder_path)
+#     def __init__(self,data_folder_path,wave_picking_file,stations_file,t_origin,magnitude,depth):
+#         self.t0  = t_origin
+#         self.wave_picking_csv =wave_picking_file
+#         self.magnitude = magnitude
+#         self.depth = depth 
+#         self.files = os.listdir(data_folder_path)
         
-    def wavePick(self)
     
-    """
+        
+#     def wavePick(self):
+#         self.
+        
+        
     
-    data_folder_path: absolute path to SAC files folder
-    wave_picking_file: csv file with info on
-    stations_file: csv file with info stations (distance, ) 
+#     """
     
-    """
-    ### start from path to data folder where SAC files are located  
+#     data_folder_path: absolute path to SAC files folder
+#     wave_picking_file: csv file with info on
+#     stations_file: csv file with info stations (distance, ) 
     
-    data_file_list = os.listdir(data_folder_path)
+#     """
+#     ### start from path to data folder where SAC files are located  
     
-    ### setting stations name ###
+#     data_file_list = os.listdir(data_folder_path)
+    
+#     ### setting stations name ###
 
-    stations_name = list({file[3:7] for file in data_files_list}
+#     stations_name = list({file[3:7] for file in data_files_list}
            
-    for statio in station_name                     
-    trace = obs.read(files_list[j])
+#     for statio in station_name                     
+#     trace = obs.read(files_list[j])
     
     
     
