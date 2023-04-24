@@ -56,7 +56,8 @@ Origin:
     AGYE  EC   0.80   6  P      17:13:07.77 -1.62 M  1.00  d AGYE 
     AGYE  EC   0.80   6  P      17:13:18.95 -1.62 M  1.00  d AGYE
     MILO  EC   0.81  36  P      17:13:07.73 -1.84 M  1.00  d MILO 
-    COHC  EC   0.86  64  P      17:13:08.11 -1.90 M  1.00  d COHC 
+    COHC  EC   0.86  64  P      17:13:08.11 -1.90 M  1.00  d COHC
+    COHC  EC   0.86  64  S      17:13:19.49 -1.90 M  1.00  d COHC 
     SUSE  EC   0.97 125  P      17:13:11.27  0.22 M  1.00  d SUSE 
     SUSE  EC   0.97 125  S      17:13:24.17 -0.50 M  1.00  . SUSE 
     ACUE  EC   1.07  93  P      17:13:11.50 -0.74 M  1.00  u ACUE 

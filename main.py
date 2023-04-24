@@ -5,6 +5,7 @@ import matplotlib.pylab as plt
 import numpy as np
 from datetime import datetime
 from utils import utils
+from utils import utils2
 import re
 import os
 import csv
@@ -14,12 +15,27 @@ import csv
 ### Setting up general information ###
 
 
-path_event_text_file = "D:/Proyectos/Earthquake_20230318/Earthquake_March18/igepn2023fkei.txt"
+### Event txt file must contain picked times for both P AND S waves to work (Otherwise error will appear on dictionary)
+path_event_text_file = "C:/Users/joanv/OneDrive/Escritorio/Geofisico/Earthquake_version/igepn2023fkei.txt"
+path_summary_acc_text_file = "C:/Users/joanv/OneDrive/Escritorio/Geofisico/Earthquake_version/summary_ACC.txt"
+path_summary_vel_text_file = "C:/Users/joanv/OneDrive/Escritorio/Geofisico/Earthquake_version/summary_VEL.txt"
+
+
+
+
+
 main_dir = os.path.abspath(os.getcwd()) 
 data_folder_dir =  os.path.join(main_dir,"data")
 data_files_list = os.listdir(data_folder_dir)
 stations_name =  list({file[3:7] for file in data_files_list})
 data_files_list = [os.path.join(data_folder_dir,item) for item in os.listdir(data_folder_dir)]
+
+
+
+March18 = utils2.Earthquake(data_folder_dir,path_event_text_file,path_summary_acc_text_file,path_summary_vel_text_file)
+
+
+
 
 
 def line_index(path:str,string:str):
@@ -122,23 +138,88 @@ def csv_creator(path:str,name_csv:str,line_start:int,line_end=None):
 csv_creator(path_event_text_file,'station_phase_arrivals.csv',lineStationPhase,line_end=lineStationMagn) 
 csv_creator(path_event_text_file,'station_magnitudes.csv',lineStationMagn)    
 
-### Filtering data to keep only desired stations ### 
+### Filter data to keep only desired stations . Create data frames ### 
+
 
 cols = ['sta','net','dist','azi','phase','time']
 df = pd.read_csv("station_phase_arrivals.csv",names=cols,sep=',',skiprows=1)
 rows = df.loc[df['sta'].isin(stations_name)][cols]
 rows = rows.set_index('sta')
 
+cols1 = ['sta','net','dist','azi','type','value']
+df1 = pd.read_csv("station_magnitudes.csv",names=cols1,sep=',',skiprows=1)
+rows1 = df1.loc[df1['sta'].isin(stations_name)][cols1]
+rows1 = rows1.set_index('sta')
+
+cols2 =["NET.STATION.LOCID.CMPNM", "MaxAcc", "TimeOfMaxAcc", "DIST", "AZ", "BAZ",
+        "PeakVecACC", "EstimatedDuration."]
+df2 = pd.read_csv(path_summary_acc_text_file,names=cols2,sep=' ',skiprows=1)
+df2['station'] = df2['NET.STATION.LOCID.CMPNM'].str[3:7]
+df2['CHN'] = df2['NET.STATION.LOCID.CMPNM'].str[-3:]
+rows2 = df2.loc[df2['station'].isin(stations_name)][["station","CHN","MaxAcc", "TimeOfMaxAcc", "DIST"]]
+rows2['stationCHN'] = rows2['station']  + rows2['CHN']  
+rows2 = rows2.set_index('stationCHN')  
+rows2 = rows2.loc[rows2['CHN'].isin(['HNE','HNN','HNZ','BLE','BLN','BLZ'])][["station","CHN","MaxAcc", "TimeOfMaxAcc", "DIST"]]
+rows2['CHN'] = rows2['CHN'].str[-1:]
+rows2 = rows2.set_index(rows2['station']  + rows2['CHN'])  
+
+cols3 =["NET.STATION.LOCID.CMPNM", "MaxVel", "TimeOfMaxVel", "DIST", "AZ", "BAZ",
+        "PeakVecVel", "EstimatedDuration."]
+df3 = pd.read_csv(path_summary_acc_text_file,names=cols3,sep=' ',skiprows=1)
+df3['station'] = df3['NET.STATION.LOCID.CMPNM'].str[3:7]
+df3['CHN'] = df3['NET.STATION.LOCID.CMPNM'].str[-3:]
+rows3 = df3.loc[df3['station'].isin(stations_name)][["station","CHN","MaxVel", "TimeOfMaxVel", "DIST"]]
+rows3['stationCHN'] = rows3['station']  + rows3['CHN']  
+rows3 = rows3.set_index('stationCHN')  
+rows3 = rows3.loc[rows3['CHN'].isin(['HNE','HNN','HNZ','BLE','BLN','BLZ'])][["station","CHN","MaxVel", "TimeOfMaxVel", "DIST"]]
+rows3['CHN'] = rows3['CHN'].str[-1:]
+rows3 = rows3.set_index(rows3['station']  + rows3['CHN'])  
+
+
+
+### Construct dictionary to store data per station ###
+
+
+stations_data = dict()
+
+for station in stations_name:
+        stations_data[station]= dict()
+        stations_data[station]['name']= station
+        stations_data[station]['azimuth'] = float(rows.loc[station,'azi'][0])
+        stations_data[station]['P-arrival time'] = UTCDateTime(datetime.strptime('2023-03-18 '+
+                     rows.loc[station,'time'][0],"%Y-%m-%d %H:%M:%S.%f").isoformat())
+        stations_data[station]['S-arrival time'] = UTCDateTime(datetime.strptime('2023-03-18 '+
+                     rows.loc[station,'time'][1],"%Y-%m-%d %H:%M:%S.%f").isoformat())
+        stations_data[station]['maxAccZ'] = float(rows2.loc[station+'Z','MaxAcc'])
+        stations_data[station]['maxAccN'] = float(rows2.loc[station+'N','MaxAcc'])
+        stations_data[station]['maxAccE'] = float(rows2.loc[station+'E','MaxAcc'])
+        stations_data[station]['TimeOfmaxAccZ'] = UTCDateTime(datetime.strptime('2023-03-18 '+
+                    rows2.loc[station+'Z','TimeOfMaxAcc'],"%Y-%m-%d %H:%M:%S.%f").isoformat())
+        stations_data[station]['TimeOfmaxAccN'] =  UTCDateTime(datetime.strptime('2023-03-18 '+
+                    rows2.loc[station+'N','TimeOfMaxAcc'],"%Y-%m-%d %H:%M:%S.%f").isoformat())
+        stations_data[station]['TimeOfmaxAccE'] =  UTCDateTime(datetime.strptime('2023-03-18 '+
+                    rows2.loc[station+'E','TimeOfMaxAcc'],"%Y-%m-%d %H:%M:%S.%f").isoformat())
+        stations_data[station]['maxVelZ'] = float(rows3.loc[station+'Z','MaxVel'])
+        stations_data[station]['maxVelN'] = float(rows3.loc[station+'N','MaxVel'])
+        stations_data[station]['maxVelE'] = float(rows3.loc[station+'E','MaxVel'])
+        stations_data[station]['TimeOfmaxVelZ'] = UTCDateTime(datetime.strptime('2023-03-18 '+
+                    rows3.loc[station+'Z','TimeOfMaxVel'],"%Y-%m-%d %H:%M:%S.%f").isoformat())
+        stations_data[station]['TimeOfmaxVelN'] =  UTCDateTime(datetime.strptime('2023-03-18 '+
+                    rows3.loc[station+'N','TimeOfMaxVel'],"%Y-%m-%d %H:%M:%S.%f").isoformat())
+        stations_data[station]['TimeOfmaxVelE'] =  UTCDateTime(datetime.strptime('2023-03-18 '+
+                    rows3.loc[station+'E','TimeOfMaxVel'],"%Y-%m-%d %H:%M:%S.%f").isoformat())
+        stations_data[station]['epicentralDist'] = float(rows2.loc[station+'E','DIST'])
+        stations_data[station]['hypocentralDist'] = round(np.sqrt(float(rows2.loc[station+'E','DIST'])**2 + depth**2),2)
 
 
 
 
 
 
-
-
-
-
+df_data = pd.DataFrame.from_dict(stations_data.values()) 
+df_data = df_data.set_index('name')
+df_data = df.sort_values(by=['hypocentralDist'])
+df_data.to_csv ('summary_data_acc_vel', header=True)
 
 
 

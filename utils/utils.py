@@ -451,7 +451,7 @@ def intensity_plots(main_dir,files_set,stations_data,t0,plot_type='Arias_Intensi
             j=2
             
         n = len(files_list)//3    
-        fig,axes = plt.subplots(n,figsize=(12,15))
+        fig,axes = plt.subplots(n,figsize=(14,16))
         
         # fig1,axes1 = plt.subplots(n,3,figsize=(12,16))
         for i in range(0,len(files_list),3):
