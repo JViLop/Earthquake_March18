@@ -13,12 +13,14 @@ import csv
 
 
 ### Setting up general information ###
-
-
+main_dir = os.path.abspath(os.getcwd()) 
+path_event_text_file =  os.path.join(main_dir,"igepn2023fkei.txt")
+path_summary_acc_text_file = os.path.join(main_dir,"summary_ACC.txt")
+path_summary_vel_text_file = os.path.join(main_dir,"summary_VEL.txt")
 ### Event txt file must contain picked times for both P AND S waves to work (Otherwise error will appear on dictionary)
-path_event_text_file = "C:/Users/joanv/OneDrive/Escritorio/Geofisico/Earthquake_version/igepn2023fkei.txt"
-path_summary_acc_text_file = "C:/Users/joanv/OneDrive/Escritorio/Geofisico/Earthquake_version/summary_ACC.txt"
-path_summary_vel_text_file = "C:/Users/joanv/OneDrive/Escritorio/Geofisico/Earthquake_version/summary_VEL.txt"
+# path_event_text_file = "C:/Users/joanv/OneDrive/Escritorio/Geofisico/Earthquake_version/igepn2023fkei.txt"
+# path_summary_acc_text_file = "C:/Users/joanv/OneDrive/Escritorio/Geofisico/Earthquake_version/summary_ACC.txt"
+# path_summary_vel_text_file = "C:/Users/joanv/OneDrive/Escritorio/Geofisico/Earthquake_version/summary_VEL.txt"
 
 
 

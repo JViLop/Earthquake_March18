@@ -140,7 +140,7 @@ class Earthquake:
     def __init__(self,path_data_folder:str,path_event_text_file:str,path_summary_acc_text_file:str,path_summary_vel_text_file:str):
         self.main_dir = os.path.abspath(os.getcwd()) 
         self.data_set = os.listdir(path_data_folder)
-        self.data_files_list = [os.path.join(path_data_folder,item) for item in os.listdir(path_data_folder)]
+        self.data_set_abs_path = [os.path.join(path_data_folder,item) for item in os.listdir(path_data_folder)]
         self.path_data_folder = path_data_folder
         self.path_event_text_file = path_event_text_file
         self.path_summary_acc_text_file = path_summary_acc_text_file  
@@ -150,11 +150,11 @@ class Earthquake:
         self.event_info()
         self.stations_info()
         self.raw_spectrum_plots(10,'linear')
-        self.noise_spectrum_plots(10,'linear',0,0)
-        self.p_wave_spectrum_plots(10, 'linear')
-        self.s_wave_spectrum_plots(10, 'linear')
-        self.coda_wave_spectrum_plots(10, 'linear')
-        self.intensity_plots(100)
+        # self.noise_spectrum_plots(10,'linear',0,0)
+        # self.p_wave_spectrum_plots(10, 'linear')
+        # self.s_wave_spectrum_plots(10, 'linear')
+        # self.coda_wave_spectrum_plots(10, 'linear')
+        # self.intensity_plots(100)
     @staticmethod
     def line_index(path:str,string:str):
         with open(path, 'r') as fp:
@@ -245,7 +245,14 @@ class Earthquake:
             write = csv.writer(csv_file)
             write.writerows(content)
     
-        
+    @staticmethod
+    def url_finder(x,station,comp):
+        pattern = fr'{station}+[^0-9]+{comp}'
+        re_pattern = re.compile(pattern)
+        for item in x:
+            if  re.findall(re_pattern, item):
+                return item
+            
     def stations_info(self):
         lineStationPhase = Earthquake.line_index(self.path_event_text_file,'Phase arrivals:')  
         lineStationMagn = Earthquake.line_index(self.path_event_text_file,'Station magnitudes:')
@@ -327,16 +334,20 @@ class Earthquake:
                             rows3.loc[station+'E','TimeOfMaxVel'],"%Y-%m-%d %H:%M:%S.%f").isoformat())
                 stations_data[station]['epicentralDist'] = float(rows2.loc[station+'E','DIST'])
                 stations_data[station]['hypocentralDist'] = round(np.sqrt(float(rows2.loc[station+'E','DIST'])**2 + depth**2),2)
-                stations_data[station]['absolute_path_E'] = self.data_set[i]
-                stations_data[station]['absolute_path_N'] = self.data_set[i+1]
-                stations_data[station]['absolute_path_Z'] = self.data_set[i+2]
+                stations_data[station]['absolute_path_N'] = Earthquake.url_finder(self.data_set_abs_path,station,'N')
+                stations_data[station]['absolute_path_E'] = Earthquake.url_finder(self.data_set_abs_path,station,'E')
+                stations_data[station]['absolute_path_Z'] = Earthquake.url_finder(self.data_set_abs_path,station,'Z')
 
                 
-                i=i+3
+                i=i+2
         self.stations_info = stations_data
+        
+        ### move this to end ###
+        
         df_data = pd.DataFrame.from_dict(stations_data.values()) 
         df_data = df_data.set_index('name')
         df_data = df_data.sort_values(by=['hypocentralDist'])
+        self.station_df = df_data
         path_stations_data = os.path.join(self.path_csv_files,'summary_stations_data.csv')
         df_data.to_csv(path_stations_data, header=True)
         
@@ -367,13 +378,15 @@ class Earthquake:
         # with length equal to the original array, discarding the added leading and trailing samples
         B = np.convolve(temp, np.ones(N) / N, mode="same")[N:-N]
         return B
+    
     @staticmethod    
-    def raw_spectrum_subplot(data_set,f_max,scale_type):  ### change from -3 secons before p-arrival and 3 seconds after coda wave lapse time
-        n = len(data_set)//3    
-        fig,axes = plt.subplots(n,3,figsize=(12,15))
-        for i in range(0,len(data_set),3):
-            for j in range(3):
-                trace = obs.read('data/'+data_set[i+j])
+    def raw_spectrum_subplot(df_station,f_max,scale_type,comp):  ### change from -3 secons before p-arrival and 3 seconds after coda wave lapse time
+        n = len(df_station.index)
+        fig,axes = plt.subplots(n,figsize=(12,15))
+        abspath = 'absolute_path_{}'.format(comp)
+        for i,station in enumerate(df_station.index):  
+                print(station)
+                trace = obs.read(df_station.loc[station,abspath])
                 data = trace[0]
                 station_name  = data.stats.station
                 station_channel = data.stats.channel
@@ -385,16 +398,19 @@ class Earthquake:
                 freqs = np.fft.rfftfreq(npts,dt)      
                 ## Plotting ##    
                 if scale_type == "linear":
-                    axes[i//3][j].plot(freqs,power_spec,linewidth=0.5)
-                    axes[i//3][j].set_xlim(0, f_max)
-
+                    axes[i].plot(freqs,power_spec,linewidth=0.5)
+                    axes[i].set_xlim(0, f_max)
+                    
                 elif scale_type == 'log':
-                    axes[i//3][j].semilogx(freqs,power_spec,linewidth=0.5)
-                    axes[i//3][j].set_xlim(0.1, f_max)
-                axes[i//3][j].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
-                axes[i//3][j].tick_params(axis='both',labelsize=7.5)
-                axes[i//3][j].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 9,'color':'blue','fontweight':'bold'})
+                    axes[i].semilogx(freqs,power_spec,linewidth=0.5)
+                    axes[i].set_xlim(0.1, f_max)
+                axes[i].set_ylabel('Power Spectrum ',fontsize=10)
+                axes[i].set_xlabel('Frequency [Hz]',fontsize=10)
+                axes[i].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
+                axes[i].tick_params(axis='both',labelsize=7.5)
+                axes[i].set_title(station_name + ' ' + station_channel,fontdict={'fontsize': 9,'color':'blue','fontweight':'bold'})
         return fig, axes
+    
     @staticmethod
     def slicer(data_list,n_group=4*3):
         sl = []
@@ -414,14 +430,17 @@ class Earthquake:
         
     ### Plotting spectra per each subset ###
         index_slice = Earthquake.slicer(self.data_set)
-        for group in index_slice:
-            fig,axes = Earthquake.raw_spectrum_subplot(self.data_set[group[0]:group[1]],fmax,scaletype)   
+        for comp in ['E','N','Z']:
+            fig,axes = Earthquake.raw_spectrum_subplot(self.station_df,fmax,scaletype,comp)   
             fig.suptitle(self.title +'\n {}'.format(plot_type.replace('_',' ')),fontsize=12)
             fig.supxlabel(r'f')
             fig.supylabel(r'Power Spectrum')
             fig.tight_layout(pad=1.25)
-            path_plot = os.path.join(path_plot_type,plot_type +"_{}_{}".format(group[0],group[1])+"_fmax_{}_".format(fmax) + "_scale_{}".format(scaletype)+".jpeg")
+            path_plot = os.path.join(path_plot_type,plot_type +"_comp_{}".format(comp)+"_fmax_{}_".format(fmax) + "_scale_{}".format(scaletype)+".jpeg")
             fig.savefig(path_plot,dpi=600)  
+            
+
+            
     @staticmethod    
     def noise_spectrum_subplot(data_set,f_max,scale_type,origin_time,dict_info,dt_bo=0,dt_ap=0):
         n = len(data_set)//3    
