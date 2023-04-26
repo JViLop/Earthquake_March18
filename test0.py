@@ -8,12 +8,16 @@ Created on Mon Apr 24 18:09:05 2023
 import re
 
 
-station = 'ACH1'
-comp = 'E'
+station = 'ISPG'
+comp = 'N'
 
-@staticmethod
+
 def url_finder(x,station,comp):
-    pattern = fr'{station}+[^0-9]+{comp}'
+    pattern = fr'{station}+[^a-zA-Z0-9_]+(HN|BL|HH){comp}'
     re_pattern = re.compile(pattern)
     if  re.findall(re_pattern, x):
-        return 
+        print(x)
+    
+    
+    
+url_finder('D:\Proyectos\Earthquake_version\Earthquake_March18\data\EC.ISPG..HNE_20230318T171235.SAC',station,comp)
